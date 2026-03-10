@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { use } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,7 +19,8 @@ interface Video {
   createdat: string;
 }
 
-export default function VideoPage({ params }: { params: { id: string } }) {
+export default function VideoPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [video, setVideo] = useState<Video | null>(null);
   const [loading, setLoading] = useState(true);
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
@@ -32,12 +34,12 @@ export default function VideoPage({ params }: { params: { id: string } }) {
         const data = await response.json();
         const allVideos = data.videos || [];
 
-        const currentVideo = allVideos.find((v: Video) => v.id === params.id);
+        const currentVideo = allVideos.find((v: Video) => v.id === id);
         setVideo(currentVideo || null);
 
         if (currentVideo) {
           const related = allVideos
-            .filter((v: Video) => v.subject === currentVideo.subject && v.id !== params.id)
+            .filter((v: Video) => v.subject === currentVideo.subject && v.id !== id)
             .slice(0, 6);
           setRelatedVideos(related);
         }
@@ -50,7 +52,7 @@ export default function VideoPage({ params }: { params: { id: string } }) {
     };
 
     fetchVideoAndRelated();
-  }, [params.id]);
+  }, [id]);
 
   if (loading) {
     return (
