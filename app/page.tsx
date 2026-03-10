@@ -106,19 +106,10 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <main className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 overflow-y-auto scrollbar-hide">
       {/* Header */}
       <div className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="mb-6">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2 text-balance">
-              Perpustakaan Video Pembelajaran
-            </h1>
-            <p className="text-base text-muted-foreground">
-              Ribuan video berkualitas untuk pembelajaran SD, SMP, dan SMA
-            </p>
-          </div>
-
+        <div className="max-w-7xl mx-auto px-4 py-4">
           {/* Filters - Always visible with dropdown selects */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Kelas Filter Dropdown */}
