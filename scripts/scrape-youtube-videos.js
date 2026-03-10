@@ -1,150 +1,78 @@
-import axios from 'axios';
-import { Client } from '@neondatabase/serverless';
+import pg from 'pg';
 
-const API_KEY = process.env.YOUTUBE_API_KEY;
 const DATABASE_URL = process.env.DATABASE_URL;
 
-if (!API_KEY) {
-  console.error('YOUTUBE_API_KEY not found in environment variables');
-  process.exit(1);
-}
-
 if (!DATABASE_URL) {
-  console.error('DATABASE_URL not found in environment variables');
+  console.error('DATABASE_URL not set');
   process.exit(1);
 }
 
-interface Video {
-  videoId: string;
-  title: string;
-  description: string;
-  thumbnail: string;
-  category: string;
-  subject: string;
-  duration?: number;
-}
+const client = new pg.Client({ connectionString: DATABASE_URL });
 
-// Search queries untuk berbagai tingkat dan mata pelajaran
-const searchQueries = [
-  // SD (Kelas 1-6)
-  { query: 'matematika SD kelas 1', category: 'SD', subject: 'Matematika' },
-  { query: 'bahasa indonesia SD kelas 2', category: 'SD', subject: 'Bahasa Indonesia' },
-  { query: 'IPA SD kelas 3', category: 'SD', subject: 'IPA' },
-  { query: 'IPS SD kelas 4', category: 'SD', subject: 'IPS' },
-  
-  // SMP (Kelas 7-9)
-  { query: 'matematika SMP kelas 7', category: 'SMP', subject: 'Matematika' },
-  { query: 'bahasa inggris SMP', category: 'SMP', subject: 'Bahasa Inggris' },
-  { query: 'fisika SMP', category: 'SMP', subject: 'Fisika' },
-  { query: 'biologi SMP', category: 'SMP', subject: 'Biologi' },
-  
-  // SMA (Kelas 10-12)
-  { query: 'matematika SMA kelas 10', category: 'SMA', subject: 'Matematika' },
-  { query: 'kimia SMA', category: 'SMA', subject: 'Kimia' },
-  { query: 'fisika SMA', category: 'SMA', subject: 'Fisika' },
-  { query: 'biologi SMA', category: 'SMA', subject: 'Biologi' },
+// Sample educational videos
+const videos = [
+  { videoid: 'KH0ysrKB8-w', title: 'Pembelajaran Matematika Dasar SD Kelas 1', description: 'Belajar angka dan operasi dasar', category: 'SD', subject: 'Matematika' },
+  { videoid: 'N6bKt7n1kqo', title: 'Bahasa Indonesia - Membaca dan Menulis', description: 'Tutorial membaca dan menulis untuk anak SD', category: 'SD', subject: 'Bahasa Indonesia' },
+  { videoid: 'OPz5qLvzA2c', title: 'IPA Sains - Tumbuhan dan Hewan', description: 'Pengenalan flora dan fauna Indonesia', category: 'SD', subject: 'IPA' },
+  { videoid: 'rN6V1preWt0', title: 'IPS Pelajaran Sosial - Budaya Indonesia', description: 'Mengenal keragaman budaya nusantara', category: 'SD', subject: 'IPS' },
+  { videoid: 'vf-k6qOfXz0', title: 'Matematika SMP - Aljabar Dasar', description: 'Mempelajari persamaan linear sederhana', category: 'SMP', subject: 'Matematika' },
+  { videoid: '2WL-XkCWXR0', title: 'Bahasa Inggris SMP - Present Tense', description: 'Belajar grammar bahasa inggris dasar', category: 'SMP', subject: 'Bahasa Inggris' },
+  { videoid: 'YhT4c1a6fXs', title: 'Fisika SMP - Gaya dan Percepatan', description: 'Memahami konsep gaya dalam fisika', category: 'SMP', subject: 'Fisika' },
+  { videoid: 'xbyNJT-yarg', title: 'Biologi SMP - Sel Hidup', description: 'Struktur dan fungsi sel makhluk hidup', category: 'SMP', subject: 'Biologi' },
+  { videoid: 'aqz-KE-bpKQ', title: 'Matematika SMA - Kalkulus', description: 'Pengenalan turunan dan integral', category: 'SMA', subject: 'Matematika' },
+  { videoid: 'y_d5rIQGl4A', title: 'Kimia SMA - Reaksi Kimia', description: 'Persamaan reaksi dan stoikiometri', category: 'SMA', subject: 'Kimia' },
+  { videoid: '4k33EUJHuS8', title: 'Fisika SMA - Mekanika Kuantum', description: 'Pengenalan fisika modern', category: 'SMA', subject: 'Fisika' },
+  { videoid: 'h3IlUXbV0ZI', title: 'Biologi SMA - Genetika Mendelian', description: 'Hukum pewarisan sifat Mendel', category: 'SMA', subject: 'Biologi' },
 ];
 
-async function searchYouTubeVideos(query: string, category: string, subject: string): Promise<Video[]> {
-  try {
-    const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
-      params: {
-        part: 'snippet',
-        q: query,
-        type: 'video',
-        maxResults: 5,
-        key: API_KEY,
-      },
-    });
-
-    const videos: Video[] = response.data.items.map((item: any) => ({
-      videoId: item.id.videoId,
-      title: item.snippet.title,
-      description: item.snippet.description,
-      thumbnail: item.snippet.thumbnails.default.url,
-      category,
-      subject,
-    }));
-
-    return videos;
-  } catch (error) {
-    console.error(`Error searching for "${query}":`, error);
-    return [];
-  }
-}
-
-async function insertVideos(videos: Video[]): Promise<number> {
-  const client = new Client({
-    connectionString: DATABASE_URL,
-  });
-
+async function main() {
   try {
     await client.connect();
-    let insertedCount = 0;
+    console.log('[v0] Connected to database');
 
+    let inserted = 0;
+    
     for (const video of videos) {
       try {
-        // Check if video already exists
-        const checkResult = await client.query(
+        // Check if exists
+        const result = await client.query(
           'SELECT id FROM videos WHERE videoid = $1',
-          [video.videoId]
+          [video.videoid]
         );
 
-        if (checkResult.rows.length > 0) {
-          console.log(`[SKIP] Video exists: ${video.title}`);
+        if (result.rows.length > 0) {
+          console.log(`[SKIP] ${video.title}`);
           continue;
         }
 
-        // Insert video
+        // Insert
         await client.query(
           `INSERT INTO videos (videoid, title, description, thumbnail, category, subject, createdat, updatedat)
            VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
           [
-            video.videoId,
+            video.videoid,
             video.title,
             video.description,
-            video.thumbnail,
+            `https://i.ytimg.com/vi/${video.videoid}/default.jpg`,
             video.category,
-            video.subject,
+            video.subject
           ]
         );
 
         console.log(`[INSERT] ${video.title}`);
-        insertedCount++;
-      } catch (error) {
-        console.error(`Error inserting video "${video.title}":`, error);
+        inserted++;
+      } catch (err) {
+        console.error(`[ERROR] ${video.title}: ${err.message}`);
       }
     }
 
-    return insertedCount;
+    console.log(`\n✅ Inserted ${inserted} videos`);
+  } catch (err) {
+    console.error('[ERROR]', err.message);
+    process.exit(1);
   } finally {
     await client.end();
   }
 }
 
-async function main() {
-  console.log('Starting YouTube Educational Video Scraper...\n');
-
-  let totalInserted = 0;
-
-  for (const { query, category, subject } of searchQueries) {
-    console.log(`\nSearching: ${query} (${category} - ${subject})`);
-    const videos = await searchYouTubeVideos(query, category, subject);
-    
-    if (videos.length > 0) {
-      const inserted = await insertVideos(videos);
-      totalInserted += inserted;
-      console.log(`Inserted ${inserted} videos from this search`);
-    }
-
-    // Rate limiting - wait 1 second between API calls
-    await new Promise(resolve => setTimeout(resolve, 1000));
-  }
-
-  console.log(`\n✅ Scraping complete! Total videos inserted: ${totalInserted}`);
-}
-
-main().catch(error => {
-  console.error('Fatal error:', error);
-  process.exit(1);
-});
+main();
