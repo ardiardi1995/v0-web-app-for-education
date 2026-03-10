@@ -110,46 +110,40 @@ export default function Home() {
       {/* Header */}
       <div className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-3">
-          {/* Filters - Compact horizontal layout */}
-          <div className="flex flex-col md:flex-row gap-3 items-end">
+          {/* Filters - Pure horizontal layout */}
+          <div className="flex gap-3 items-center">
             {/* Kelas Filter Dropdown */}
-            <div className="flex flex-col gap-1 md:flex-1">
-              <label className="text-xs font-medium text-foreground">Kelas</label>
-              <select
-                value={selectedKelas ?? ''}
-                onChange={(e) => setSelectedKelas(e.target.value ? parseInt(e.target.value) : null)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-input bg-background text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="">Semua Kelas</option>
-                {kelas.map(k => (
-                  <option key={k} value={k}>
-                    Kelas {k}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select
+              value={selectedKelas ?? ''}
+              onChange={(e) => setSelectedKelas(e.target.value ? parseInt(e.target.value) : null)}
+              className="px-3 py-2 text-sm rounded-lg border border-input bg-background text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="">Semua Kelas</option>
+              {kelas.map(k => (
+                <option key={k} value={k}>
+                  Kelas {k}
+                </option>
+              ))}
+            </select>
 
             {/* Mata Pelajaran Filter Dropdown */}
-            <div className="flex flex-col gap-1 md:flex-1">
-              <label className="text-xs font-medium text-foreground">Mata Pelajaran</label>
-              <select
-                value={selectedSubject ?? ''}
-                onChange={(e) => setSelectedSubject(e.target.value || null)}
-                disabled={!selectedKelas}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-input bg-background text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <option value="">Semua</option>
-                {selectedKelas && availableSubjects.map(subject => (
-                  <option key={subject} value={subject}>
-                    {subject}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select
+              value={selectedSubject ?? ''}
+              onChange={(e) => setSelectedSubject(e.target.value || null)}
+              disabled={!selectedKelas}
+              className="px-3 py-2 text-sm rounded-lg border border-input bg-background text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="">Semua</option>
+              {selectedKelas && availableSubjects.map(subject => (
+                <option key={subject} value={subject}>
+                  {subject}
+                </option>
+              ))}
+            </select>
 
             {/* Active Filters - Inline badges */}
             {activeFilters.length > 0 && (
-              <div className="flex gap-2">
+              <div className="flex gap-2 ml-auto">
                 {selectedKelas && (
                   <Badge variant="secondary" className="text-xs">
                     Kelas {selectedKelas}
