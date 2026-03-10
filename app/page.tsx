@@ -109,18 +109,18 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 overflow-y-auto scrollbar-hide">
       {/* Header */}
       <div className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          {/* Filters - Always visible with dropdown selects */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          {/* Filters - Compact horizontal layout */}
+          <div className="flex flex-col md:flex-row gap-3 items-end">
             {/* Kelas Filter Dropdown */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-foreground">Pilih Kelas</label>
+            <div className="flex flex-col gap-1 md:flex-1">
+              <label className="text-xs font-medium text-foreground">Kelas</label>
               <select
                 value={selectedKelas ?? ''}
                 onChange={(e) => setSelectedKelas(e.target.value ? parseInt(e.target.value) : null)}
-                className="w-full px-4 py-2 rounded-lg border border-input bg-background text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-input bg-background text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="">-- Semua Kelas --</option>
+                <option value="">Semua Kelas</option>
                 {kelas.map(k => (
                   <option key={k} value={k}>
                     Kelas {k}
@@ -130,15 +130,15 @@ export default function Home() {
             </div>
 
             {/* Mata Pelajaran Filter Dropdown */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-foreground">Mata Pelajaran</label>
+            <div className="flex flex-col gap-1 md:flex-1">
+              <label className="text-xs font-medium text-foreground">Mata Pelajaran</label>
               <select
                 value={selectedSubject ?? ''}
                 onChange={(e) => setSelectedSubject(e.target.value || null)}
                 disabled={!selectedKelas}
-                className="w-full px-4 py-2 rounded-lg border border-input bg-background text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-input bg-background text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="">-- Semua Mata Pelajaran --</option>
+                <option value="">Semua</option>
                 {selectedKelas && availableSubjects.map(subject => (
                   <option key={subject} value={subject}>
                     {subject}
@@ -146,23 +146,23 @@ export default function Home() {
                 ))}
               </select>
             </div>
-          </div>
 
-          {/* Active Filters Display */}
-          {activeFilters.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border">
-              {selectedKelas && (
-                <Badge variant="secondary" className="gap-2">
-                  Kelas {selectedKelas}
-                </Badge>
-              )}
-              {selectedSubject && (
-                <Badge variant="secondary" className="gap-2">
-                  {selectedSubject}
-                </Badge>
-              )}
-            </div>
-          )}
+            {/* Active Filters - Inline badges */}
+            {activeFilters.length > 0 && (
+              <div className="flex gap-2">
+                {selectedKelas && (
+                  <Badge variant="secondary" className="text-xs">
+                    Kelas {selectedKelas}
+                  </Badge>
+                )}
+                {selectedSubject && (
+                  <Badge variant="secondary" className="text-xs">
+                    {selectedSubject}
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
