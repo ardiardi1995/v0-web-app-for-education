@@ -111,7 +111,7 @@ export default function Home() {
       <div className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4">
           {/* Filters - Horizontal layout with labels */}
-          <div className="flex gap-4 items-end">
+          <div className="flex gap-2 items-end">
             {/* Kelas Filter */}
             <div className="flex flex-col gap-2 flex-1">
               <label className="text-sm font-medium text-foreground">Kelas</label>
@@ -151,9 +151,9 @@ export default function Home() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto px-4 py-2">
         {/* Results Info */}
-        <div className="mb-8">
+        <div className="mb-2">
           <p className="text-sm text-muted-foreground">
             Menampilkan <span className="font-semibold text-foreground">{filteredVideos.length}</span> dari{' '}
             <span className="font-semibold text-foreground">{videos.length}</span> video
