@@ -74,7 +74,7 @@ async function insertVideoToDatabase(client, video, educationLevel, subject) {
 
     // Check if video already exists
     const checkResult = await client.query(
-      'SELECT id FROM videos WHERE video_id = $1',
+      'SELECT id FROM videos WHERE "videoId" = $1',
       [videoId]
     );
 
@@ -84,8 +84,8 @@ async function insertVideoToDatabase(client, video, educationLevel, subject) {
     }
 
     await client.query(
-      `INSERT INTO videos (video_id, title, description, thumbnail, category, subject, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+      `INSERT INTO videos ("videoId", title, description, thumbnail, category, subject, "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
       [videoId, title, description, thumbnail, educationLevel, subject]
     );
 

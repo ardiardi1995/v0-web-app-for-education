@@ -35,7 +35,7 @@ export async function seedVideos() {
       try {
         // Check if video already exists
         const checkResult = await client.query(
-          'SELECT id FROM videos WHERE video_id = $1',
+          'SELECT id FROM videos WHERE "videoId" = $1',
           [video.video_id]
         );
 
@@ -46,8 +46,8 @@ export async function seedVideos() {
 
         // Insert video
         await client.query(
-          `INSERT INTO videos (video_id, title, description, thumbnail, category, subject, created_at)
-           VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+          `INSERT INTO videos ("videoId", title, description, thumbnail, category, subject, "createdAt", "updatedAt")
+           VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
           [
             video.video_id,
             video.title,
