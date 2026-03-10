@@ -9,36 +9,24 @@ export async function GET() {
     await client.connect();
 
     const result = await client.query(
-      `SELECT id, videoid, title, description, thumbnail, category, subject, createdat 
-       FROM videos 
-       ORDER BY createdat DESC 
-       LIMIT 1000`
+      'SELECT id, videoid, title, description, thumbnail, category, subject, createdat FROM videos ORDER BY createdat DESC LIMIT 1000'
     );
 
     await client.end();
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        videos: result.rows,
-      }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return Response.json({
+      success: true,
+      videos: result.rows,
+    });
   } catch (error) {
     console.error('Error fetching videos:', error);
-    return new Response(
-      JSON.stringify({
+    return Response.json(
+      {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
         videos: [],
-      }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
+      },
+      { status: 500 }
     );
   }
 }

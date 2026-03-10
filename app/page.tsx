@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Search, Play, Filter, X } from 'lucide-react';
+import Link from 'next/link';
 
 interface Video {
   id: string;
@@ -236,11 +237,9 @@ export default function Home() {
         {filteredVideos.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max">
             {filteredVideos.map(video => (
-              <a
+              <Link
                 key={video.id}
-                href={`https://www.youtube.com/watch?v=${video.videoid}`}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={`/video/${video.id}`}
                 className="group h-full"
               >
                 <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 h-full flex flex-col border hover:border-primary/50 rounded-xl">
@@ -282,7 +281,7 @@ export default function Home() {
                     </div>
                   </div>
                 </Card>
-              </a>
+              </Link>
             ))}
           </div>
         ) : (
