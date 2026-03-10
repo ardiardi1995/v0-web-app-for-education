@@ -16,6 +16,7 @@ interface Video {
   thumbnail: string;
   category: string;
   subject: string;
+  kelas: number;
   createdat: string;
 }
 
