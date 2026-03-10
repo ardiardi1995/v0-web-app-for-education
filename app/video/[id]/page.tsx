@@ -22,29 +22,28 @@ export default function VideoPage({ params }: { params: { id: string } }) {
   const [video, setVideo] = useState<Video | null>(null);
   const [loading, setLoading] = useState(true);
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchVideoAndRelated = async () => {
       try {
-        // Fetch all videos
         const response = await fetch('/api/videos');
         if (!response.ok) throw new Error('Failed to fetch videos');
         const data = await response.json();
         const allVideos = data.videos || [];
 
-        // Find the current video
         const currentVideo = allVideos.find((v: Video) => v.id === params.id);
         setVideo(currentVideo || null);
 
-        // Find related videos (same subject)
         if (currentVideo) {
           const related = allVideos
             .filter((v: Video) => v.subject === currentVideo.subject && v.id !== params.id)
             .slice(0, 6);
           setRelatedVideos(related);
         }
-      } catch (error) {
-        console.error('Error fetching video:', error);
+      } catch (err) {
+        console.error('Error fetching video:', err);
+        setError('Gagal memuat video');
       } finally {
         setLoading(false);
       }
@@ -64,7 +63,7 @@ export default function VideoPage({ params }: { params: { id: string } }) {
     );
   }
 
-  if (!video) {
+  if (error || !video) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -76,7 +75,7 @@ export default function VideoPage({ params }: { params: { id: string } }) {
           </Link>
           <div className="text-center py-12">
             <h1 className="text-2xl font-bold text-foreground mb-2">Video Tidak Ditemukan</h1>
-            <p className="text-muted-foreground">Maaf, video yang Anda cari tidak ada.</p>
+            <p className="text-muted-foreground">{error || 'Maaf, video yang Anda cari tidak ada.'}</p>
           </div>
         </div>
       </div>
@@ -86,7 +85,6 @@ export default function VideoPage({ params }: { params: { id: string } }) {
   return (
     <main className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Back Button */}
         <Link href="/">
           <Button variant="ghost" className="gap-2 mb-8">
             <ArrowLeft className="h-4 w-4" />
