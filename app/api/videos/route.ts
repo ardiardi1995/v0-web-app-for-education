@@ -9,9 +9,9 @@ export async function GET() {
     await client.connect();
 
     const result = await client.query(
-      `SELECT id, videoid, title, description, thumbnail, category, subject, created_at 
+      `SELECT id, videoid, title, description, thumbnail, category, subject, createdat 
        FROM videos 
-       ORDER BY created_at DESC 
+       ORDER BY createdat DESC 
        LIMIT 1000`
     );
 

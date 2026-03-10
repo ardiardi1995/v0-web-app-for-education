@@ -46,7 +46,7 @@ export async function seedVideos() {
 
         // Insert video
         await client.query(
-          `INSERT INTO videos (videoid, title, description, thumbnail, category, subject, created_at, updated_at)
+          `INSERT INTO videos (videoid, title, description, thumbnail, category, subject, createdat, updatedat)
            VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
           [
             video.video_id,

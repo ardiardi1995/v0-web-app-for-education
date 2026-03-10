@@ -3,28 +3,29 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Search, Play, Filter, X } from 'lucide-react';
 
 interface Video {
   id: string;
-  video_id: string;
+  videoid: string;
   title: string;
   description: string;
   thumbnail: string;
   category: string;
   subject: string;
-  created_at: string;
+  createdat: string;
 }
 
 export default function Home() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [filteredVideos, setFilteredVideos] = useState<Video[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedSubject, setSelectedSubject] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
 
   // Fetch videos on mount
   useEffect(() => {
@@ -55,12 +56,12 @@ export default function Home() {
     let result = videos;
 
     // Category filter
-    if (selectedCategory !== 'all') {
+    if (selectedCategory) {
       result = result.filter(video => video.category === selectedCategory);
     }
 
     // Subject filter
-    if (selectedSubject !== 'all') {
+    if (selectedSubject) {
       result = result.filter(video => video.subject === selectedSubject);
     }
 
@@ -70,155 +71,231 @@ export default function Home() {
       result = result.filter(
         video =>
           video.title.toLowerCase().includes(query) ||
-          video.description.toLowerCase().includes(query)
+          video.description.toLowerCase().includes(query) ||
+          video.subject.toLowerCase().includes(query)
       );
     }
 
     setFilteredVideos(result);
   }, [videos, searchQuery, selectedCategory, selectedSubject]);
 
-  const categories = ['all', 'SD', 'SMP', 'SMA'];
-  const subjects = ['all', 'Matematika', 'Bahasa Indonesia', 'IPA', 'IPS', 'Bahasa Inggris', 'Fisika', 'Kimia', 'Biologi'];
+  const categories = ['SD', 'SMP', 'SMA'];
+  const subjects = ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS', 'Bahasa Inggris', 'Fisika', 'Kimia', 'Biologi'];
+  
+  const activeFilters = [selectedCategory, selectedSubject].filter(Boolean);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-foreground">Loading videos...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary/20 border-t-primary mx-auto mb-6"></div>
+          <p className="text-lg text-foreground font-medium">Memuat video pembelajaran...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Header */}
-      <div className="bg-gradient-to-b from-primary/10 to-transparent py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-4xl font-bold text-foreground mb-2 text-balance">
-            Platform Pembelajaran Video
-          </h1>
-          <p className="text-lg text-muted-foreground mb-8">
-            Koleksi video pembelajaran dari SD hingga SMA
-          </p>
+      <div className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="mb-6">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2 text-balance">
+              Perpustakaan Video Pembelajaran
+            </h1>
+            <p className="text-base text-muted-foreground">
+              Ribuan video berkualitas untuk pembelajaran SD, SMP, dan SMA
+            </p>
+          </div>
 
           {/* Search Bar */}
-          <div className="relative mb-8">
-            <Search className="absolute left-4 top-3 h-5 w-5 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Cari video pembelajaran..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-11"
-            />
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+              <Input
+                type="text"
+                placeholder="Cari video pembelajaran..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-12 h-11 rounded-lg"
+              />
+            </div>
+            <Button
+              variant={showFilters ? 'default' : 'outline'}
+              size="icon"
+              onClick={() => setShowFilters(!showFilters)}
+              className="rounded-lg"
+            >
+              <Filter className="h-5 w-5" />
+            </Button>
           </div>
+
+          {/* Active Filters Display */}
+          {activeFilters.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {selectedCategory && (
+                <Badge variant="secondary" className="gap-2">
+                  {selectedCategory}
+                  <button
+                    onClick={() => setSelectedCategory(null)}
+                    className="hover:text-foreground ml-1"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {selectedSubject && (
+                <Badge variant="secondary" className="gap-2">
+                  {selectedSubject}
+                  <button
+                    onClick={() => setSelectedSubject(null)}
+                    className="hover:text-foreground ml-1"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {activeFilters.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedCategory(null);
+                    setSelectedSubject(null);
+                  }}
+                  className="text-xs"
+                >
+                  Hapus Filter
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        {/* Filters */}
-        <div className="mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Category Filter */}
-            <div>
-              <h3 className="font-semibold text-foreground mb-3">Tingkat Pendidikan</h3>
-              <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-                <TabsList className="w-full">
+      {/* Filters Panel */}
+      {showFilters && (
+        <div className="bg-muted/50 border-b border-border">
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Category Filter */}
+              <div>
+                <h3 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wide">
+                  Tingkat Pendidikan
+                </h3>
+                <div className="flex flex-wrap gap-2">
                   {categories.map(cat => (
-                    <TabsTrigger key={cat} value={cat} className="flex-1">
-                      {cat === 'all' ? 'Semua' : cat}
-                    </TabsTrigger>
+                    <Button
+                      key={cat}
+                      variant={selectedCategory === cat ? 'default' : 'outline'}
+                      onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
+                      className="rounded-lg"
+                    >
+                      {cat}
+                    </Button>
                   ))}
-                </TabsList>
-              </Tabs>
-            </div>
+                </div>
+              </div>
 
-            {/* Subject Filter */}
-            <div>
-              <h3 className="font-semibold text-foreground mb-3">Mata Pelajaran</h3>
-              <div className="flex flex-wrap gap-2">
-                {subjects.map(subject => (
-                  <Badge
-                    key={subject}
-                    variant={selectedSubject === subject ? 'default' : 'outline'}
-                    className="cursor-pointer"
-                    onClick={() => setSelectedSubject(subject)}
-                  >
-                    {subject === 'all' ? 'Semua' : subject}
-                  </Badge>
-                ))}
+              {/* Subject Filter */}
+              <div>
+                <h3 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wide">
+                  Mata Pelajaran
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {subjects.map(subject => (
+                    <Button
+                      key={subject}
+                      variant={selectedSubject === subject ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setSelectedSubject(selectedSubject === subject ? null : subject)}
+                      className="rounded-full text-xs"
+                    >
+                      {subject}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        {/* Results Info */}
+        <div className="mb-8">
+          <p className="text-sm text-muted-foreground">
+            Menampilkan <span className="font-semibold text-foreground">{filteredVideos.length}</span> dari{' '}
+            <span className="font-semibold text-foreground">{videos.length}</span> video
+          </p>
+        </div>
 
         {/* Videos Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredVideos.length > 0 ? (
-            filteredVideos.map(video => (
+        {filteredVideos.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max">
+            {filteredVideos.map(video => (
               <a
                 key={video.id}
-                href={`https://www.youtube.com/watch?v=${video.video_id}`}
+                href={`https://www.youtube.com/watch?v=${video.videoid}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group"
+                className="group h-full"
               >
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full">
+                <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 h-full flex flex-col border hover:border-primary/50 rounded-xl">
+                  {/* Thumbnail */}
                   <div className="relative aspect-video bg-muted overflow-hidden">
                     {video.thumbnail ? (
                       <img
                         src={video.thumbnail}
                         alt={video.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                        <p className="text-muted-foreground">No thumbnail</p>
+                        <div className="text-center">
+                          <Play className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-xs text-muted-foreground">Tidak ada thumbnail</p>
+                        </div>
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                      <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
+                    {/* Play Button Overlay */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
+                      <div className="w-14 h-14 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg">
+                        <Play className="h-7 w-7 text-primary fill-primary" />
                       </div>
                     </div>
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-foreground line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+
+                  {/* Content */}
+                  <div className="p-4 flex-1 flex flex-col">
+                    <h3 className="font-semibold text-foreground line-clamp-2 mb-2 group-hover:text-primary transition-colors duration-200">
                       {video.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                      {video.description}
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
+                      {video.description || 'Tidak ada deskripsi'}
                     </p>
                     <div className="flex gap-2 flex-wrap">
-                      <Badge variant="secondary">{video.category}</Badge>
-                      <Badge variant="outline">{video.subject}</Badge>
+                      <Badge variant="secondary" className="text-xs">{video.category}</Badge>
+                      <Badge variant="outline" className="text-xs">{video.subject}</Badge>
                     </div>
                   </div>
                 </Card>
               </a>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-12">
-              <p className="text-muted-foreground mb-2">Tidak ada video ditemukan</p>
-              <p className="text-sm text-muted-foreground">
-                Coba ubah filter atau cari dengan keyword lain
+            ))}
+          </div>
+        ) : (
+          <div className="col-span-full">
+            <Card className="p-12 text-center border-dashed">
+              <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">Tidak ada video ditemukan</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Coba ubah filter atau gunakan kata kunci pencarian lain
               </p>
-            </div>
-          )}
-        </div>
-
-        {/* Stats */}
-        <div className="mt-12 pt-8 border-t border-border">
-          <p className="text-center text-muted-foreground">
-            Menampilkan <span className="font-semibold text-foreground">{filteredVideos.length}</span> dari{' '}
-            <span className="font-semibold text-foreground">{videos.length}</span> video
-          </p>
-        </div>
+            </Card>
+          </div>
+        )}
       </div>
     </main>
   );
