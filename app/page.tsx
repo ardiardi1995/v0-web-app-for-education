@@ -16,14 +16,31 @@ interface Video {
   thumbnail: string;
   category: string;
   subject: string;
+  kelas: number;
   createdat: string;
 }
+
+// Subject availability by kelas
+const KELAS_SUBJECTS: Record<number, string[]> = {
+  1: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS'],
+  2: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS'],
+  3: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS'],
+  4: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS', 'Bahasa Inggris'],
+  5: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS', 'Bahasa Inggris'],
+  6: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS', 'Bahasa Inggris'],
+  7: ['Matematika', 'Fisika', 'Biologi', 'Kimia', 'Bahasa Indonesia', 'Bahasa Inggris'],
+  8: ['Matematika', 'Fisika', 'Biologi', 'Kimia', 'Bahasa Indonesia', 'Bahasa Inggris'],
+  9: ['Matematika', 'Fisika', 'Biologi', 'Kimia', 'Bahasa Indonesia', 'Bahasa Inggris'],
+  10: ['Matematika', 'Fisika', 'Kimia', 'Biologi', 'Bahasa Inggris'],
+  11: ['Matematika', 'Fisika', 'Kimia', 'Biologi', 'Bahasa Inggris'],
+  12: ['Matematika', 'Fisika', 'Kimia', 'Biologi', 'Bahasa Inggris'],
+};
 
 export default function Home() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [filteredVideos, setFilteredVideos] = useState<Video[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedKelas, setSelectedKelas] = useState<number | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
@@ -56,9 +73,9 @@ export default function Home() {
   useEffect(() => {
     let result = videos;
 
-    // Category filter
-    if (selectedCategory) {
-      result = result.filter(video => video.category === selectedCategory);
+    // Kelas filter
+    if (selectedKelas) {
+      result = result.filter(video => video.kelas === selectedKelas);
     }
 
     // Subject filter
@@ -78,12 +95,19 @@ export default function Home() {
     }
 
     setFilteredVideos(result);
-  }, [videos, searchQuery, selectedCategory, selectedSubject]);
+  }, [videos, searchQuery, selectedKelas, selectedSubject]);
 
-  const categories = ['SD', 'SMP', 'SMA'];
-  const subjects = ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS', 'Bahasa Inggris', 'Fisika', 'Kimia', 'Biologi'];
+  // Get available subjects for selected kelas
+  const availableSubjects = selectedKelas ? KELAS_SUBJECTS[selectedKelas] || [] : [];
   
-  const activeFilters = [selectedCategory, selectedSubject].filter(Boolean);
+  // Reset subject filter when kelas changes
+  useEffect(() => {
+    setSelectedSubject(null);
+  }, [selectedKelas]);
+
+  const kelas = Array.from({ length: 12 }, (_, i) => i + 1);
+  
+  const activeFilters = [selectedKelas ? `Kelas ${selectedKelas}` : null, selectedSubject].filter(Boolean);
 
   if (loading) {
     return (
@@ -135,11 +159,11 @@ export default function Home() {
           {/* Active Filters Display */}
           {activeFilters.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-4">
-              {selectedCategory && (
+              {selectedKelas && (
                 <Badge variant="secondary" className="gap-2">
-                  {selectedCategory}
+                  Kelas {selectedKelas}
                   <button
-                    onClick={() => setSelectedCategory(null)}
+                    onClick={() => setSelectedKelas(null)}
                     className="hover:text-foreground ml-1"
                   >
                     <X className="h-3 w-3" />
@@ -162,7 +186,7 @@ export default function Home() {
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    setSelectedCategory(null);
+                    setSelectedKelas(null);
                     setSelectedSubject(null);
                   }}
                   className="text-xs"
@@ -180,43 +204,48 @@ export default function Home() {
         <div className="bg-muted/50 border-b border-border">
           <div className="max-w-7xl mx-auto px-4 py-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Category Filter */}
+              {/* Kelas Filter */}
               <div>
                 <h3 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wide">
-                  Tingkat Pendidikan
+                  Pilih Kelas
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {categories.map(cat => (
+                  {kelas.map(k => (
                     <Button
-                      key={cat}
-                      variant={selectedCategory === cat ? 'default' : 'outline'}
-                      onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
+                      key={k}
+                      variant={selectedKelas === k ? 'default' : 'outline'}
+                      onClick={() => setSelectedKelas(selectedKelas === k ? null : k)}
                       className="rounded-lg"
+                      size="sm"
                     >
-                      {cat}
+                      Kelas {k}
                     </Button>
                   ))}
                 </div>
               </div>
 
-              {/* Subject Filter */}
+              {/* Subject Filter - Only shows subjects for selected kelas */}
               <div>
                 <h3 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wide">
                   Mata Pelajaran
                 </h3>
-                <div className="flex flex-wrap gap-2">
-                  {subjects.map(subject => (
-                    <Button
-                      key={subject}
-                      variant={selectedSubject === subject ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setSelectedSubject(selectedSubject === subject ? null : subject)}
-                      className="rounded-full text-xs"
-                    >
-                      {subject}
-                    </Button>
-                  ))}
-                </div>
+                {selectedKelas ? (
+                  <div className="flex flex-wrap gap-2">
+                    {availableSubjects.map(subject => (
+                      <Button
+                        key={subject}
+                        variant={selectedSubject === subject ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setSelectedSubject(selectedSubject === subject ? null : subject)}
+                        className="rounded-full text-xs"
+                      >
+                        {subject}
+                      </Button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Pilih kelas terlebih dahulu</p>
+                )}
               </div>
             </div>
           </div>

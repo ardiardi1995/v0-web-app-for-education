@@ -15,7 +15,7 @@ export async function GET(request) {
     // - videoid (all lowercase, no underscore)
     // - createdat (all lowercase, no underscore)
     const result = await client.query(
-      `SELECT id, videoid, title, description, thumbnail, category, subject, createdat 
+      `SELECT id, videoid, title, description, thumbnail, category, subject, kelas, createdat 
        FROM videos 
        ORDER BY createdat DESC 
        LIMIT 1000`
@@ -29,6 +29,7 @@ export async function GET(request) {
       thumbnail: row.thumbnail,
       category: row.category,
       subject: row.subject,
+      kelas: row.kelas || 1,
       createdat: row.createdat,
     }));
 
