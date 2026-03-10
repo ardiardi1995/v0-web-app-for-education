@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Search, Play, Filter, X } from 'lucide-react';
+import { Play } from 'lucide-react';
 import Link from 'next/link';
 
 interface Video {
@@ -39,11 +37,9 @@ const KELAS_SUBJECTS: Record<number, string[]> = {
 export default function Home() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [filteredVideos, setFilteredVideos] = useState<Video[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedKelas, setSelectedKelas] = useState<number | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showFilters, setShowFilters] = useState(false);
 
   // Fetch videos on mount
   useEffect(() => {
@@ -69,7 +65,7 @@ export default function Home() {
     fetchVideos();
   }, []);
 
-  // Filter videos based on search and filters
+  // Filter videos based on filters
   useEffect(() => {
     let result = videos;
 
@@ -83,19 +79,8 @@ export default function Home() {
       result = result.filter(video => video.subject === selectedSubject);
     }
 
-    // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        video =>
-          video.title.toLowerCase().includes(query) ||
-          video.description.toLowerCase().includes(query) ||
-          video.subject.toLowerCase().includes(query)
-      );
-    }
-
     setFilteredVideos(result);
-  }, [videos, searchQuery, selectedKelas, selectedSubject]);
+  }, [videos, selectedKelas, selectedSubject]);
 
   // Get available subjects for selected kelas
   const availableSubjects = selectedKelas ? KELAS_SUBJECTS[selectedKelas] || [] : [];
@@ -134,123 +119,61 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Search Bar */}
-          <div className="flex gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-              <Input
-                type="text"
-                placeholder="Cari video pembelajaran..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 h-11 rounded-lg"
-              />
+          {/* Filters - Always visible with dropdown selects */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Kelas Filter Dropdown */}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-foreground">Pilih Kelas</label>
+              <select
+                value={selectedKelas ?? ''}
+                onChange={(e) => setSelectedKelas(e.target.value ? parseInt(e.target.value) : null)}
+                className="w-full px-4 py-2 rounded-lg border border-input bg-background text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="">-- Semua Kelas --</option>
+                {kelas.map(k => (
+                  <option key={k} value={k}>
+                    Kelas {k}
+                  </option>
+                ))}
+              </select>
             </div>
-            <Button
-              variant={showFilters ? 'default' : 'outline'}
-              size="icon"
-              onClick={() => setShowFilters(!showFilters)}
-              className="rounded-lg"
-            >
-              <Filter className="h-5 w-5" />
-            </Button>
+
+            {/* Mata Pelajaran Filter Dropdown */}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-foreground">Mata Pelajaran</label>
+              <select
+                value={selectedSubject ?? ''}
+                onChange={(e) => setSelectedSubject(e.target.value || null)}
+                disabled={!selectedKelas}
+                className="w-full px-4 py-2 rounded-lg border border-input bg-background text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <option value="">-- Semua Mata Pelajaran --</option>
+                {selectedKelas && availableSubjects.map(subject => (
+                  <option key={subject} value={subject}>
+                    {subject}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Active Filters Display */}
           {activeFilters.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4">
+            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border">
               {selectedKelas && (
                 <Badge variant="secondary" className="gap-2">
                   Kelas {selectedKelas}
-                  <button
-                    onClick={() => setSelectedKelas(null)}
-                    className="hover:text-foreground ml-1"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
                 </Badge>
               )}
               {selectedSubject && (
                 <Badge variant="secondary" className="gap-2">
                   {selectedSubject}
-                  <button
-                    onClick={() => setSelectedSubject(null)}
-                    className="hover:text-foreground ml-1"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
                 </Badge>
-              )}
-              {activeFilters.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedKelas(null);
-                    setSelectedSubject(null);
-                  }}
-                  className="text-xs"
-                >
-                  Hapus Filter
-                </Button>
               )}
             </div>
           )}
         </div>
       </div>
-
-      {/* Filters Panel */}
-      {showFilters && (
-        <div className="bg-muted/50 border-b border-border">
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Kelas Filter */}
-              <div>
-                <h3 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wide">
-                  Pilih Kelas
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {kelas.map(k => (
-                    <Button
-                      key={k}
-                      variant={selectedKelas === k ? 'default' : 'outline'}
-                      onClick={() => setSelectedKelas(selectedKelas === k ? null : k)}
-                      className="rounded-lg"
-                      size="sm"
-                    >
-                      Kelas {k}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Subject Filter - Only shows subjects for selected kelas */}
-              <div>
-                <h3 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wide">
-                  Mata Pelajaran
-                </h3>
-                {selectedKelas ? (
-                  <div className="flex flex-wrap gap-2">
-                    {availableSubjects.map(subject => (
-                      <Button
-                        key={subject}
-                        variant={selectedSubject === subject ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setSelectedSubject(selectedSubject === subject ? null : subject)}
-                        className="rounded-full text-xs"
-                      >
-                        {subject}
-                      </Button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">Pilih kelas terlebih dahulu</p>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-12">
