@@ -1,7 +1,8 @@
 import { Client } from '@neondatabase/serverless';
 
-// This route fetches all videos from the database
-// Database columns: id, videoid, title, description, thumbnail, category, subject, createdat, updatedat
+// API Route: GET /api/videos
+// Returns all learning videos from database
+// Timestamp: 2024-rebuild-force
 export async function GET(request) {
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
@@ -10,11 +11,14 @@ export async function GET(request) {
   try {
     await client.connect();
 
-    // CORRECTED QUERY - using actual database column names
-    // videoid (not video_id or videoId)
-    // createdat (not created_at or createdAt)
+    // Query uses CORRECT database column names:
+    // - videoid (all lowercase, no underscore)
+    // - createdat (all lowercase, no underscore)
     const result = await client.query(
-      'SELECT id, videoid, title, description, thumbnail, category, subject, createdat FROM videos ORDER BY createdat DESC LIMIT 1000'
+      `SELECT id, videoid, title, description, thumbnail, category, subject, createdat 
+       FROM videos 
+       ORDER BY createdat DESC 
+       LIMIT 1000`
     );
 
     const videos = result.rows.map(row => ({
@@ -34,11 +38,11 @@ export async function GET(request) {
       count: videos.length,
     });
   } catch (error) {
-    console.error('[API/videos] Database error:', error);
+    console.error('[API] Error:', error);
     return Response.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Database error',
+        error: error instanceof Error ? error.message : 'Error',
         videos: [],
       },
       { status: 500 }
