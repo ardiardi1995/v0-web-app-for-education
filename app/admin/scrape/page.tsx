@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-export default function ScrapeKelas612Page() {
+export default function ScrapeKelas712Page() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
@@ -22,9 +22,25 @@ export default function ScrapeKelas612Page() {
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-      <h1>Scrape YouTube Videos for Kelas 6-12</h1>
-      <p>This page will scrape real YouTube educational videos for Kelas 6-12</p>
+    <div style={{ padding: '20px', fontFamily: 'Arial', overflow: 'auto', height: '100vh', scrollbarWidth: 'auto', scrollbarColor: '#888 #f1f1f1' }}>
+      <style>{`
+        /* For Chrome, Edge, and Safari */
+        ::-webkit-scrollbar {
+          width: 12px;
+        }
+        ::-webkit-scrollbar-track {
+          background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #888;
+          border-radius: 6px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #555;
+        }
+      `}</style>
+      <h1>Scrape YouTube Videos for Kelas 7-12</h1>
+      <p>This page will scrape real YouTube educational videos for Kelas 7-12</p>
       
       <button 
         onClick={handleScrape} 
@@ -34,9 +50,13 @@ export default function ScrapeKelas612Page() {
           fontSize: '16px',
           cursor: loading ? 'not-allowed' : 'pointer',
           opacity: loading ? 0.6 : 1,
+          backgroundColor: '#007bff',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
         }}
       >
-        {loading ? 'Scraping... (This may take a few minutes)' : 'Start Scraping Kelas 6-12'}
+        {loading ? 'Scraping... (This may take several minutes)' : 'Start Scraping Kelas 7-12'}
       </button>
 
       {result && (

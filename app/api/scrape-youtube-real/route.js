@@ -47,11 +47,11 @@ async function searchYouTubeVideos(query, maxResults = 50) {
 
 export async function POST(request) {
   try {
-    // Only scrape Kelas 6-12 (1-5 already complete)
-    const startKelas = 6;
+    // Only scrape Kelas 7-12 (1-6 already complete)
+    const startKelas = 7;
     const endKelas = 12;
     await sql`DELETE FROM videos WHERE kelas >= ${startKelas} AND kelas <= ${endKelas}`;
-    console.log('[v0] Cleared Kelas 6-12 videos to prepare for fresh scrape');
+    console.log('[v0] Cleared Kelas 7-12 videos to prepare for fresh scrape');
 
     let totalInserted = 0;
 
