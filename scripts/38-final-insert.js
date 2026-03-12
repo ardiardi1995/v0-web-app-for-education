@@ -14,13 +14,11 @@ const YOUTUBE_IDS = [
 
 async function insertKelas912() {
   try {
-    console.log('[v0] Starting Kelas 9-12 bulk insert...');
-    
+    console.log('[v0] Inserting Kelas 9-12 videos...');
     let totalInserted = 0;
-    
+
     for (let kelas = 9; kelas <= 12; kelas++) {
       const subjects = SUBJECTS[kelas];
-      console.log(`[v0] Inserting Kelas ${kelas}: ${subjects.length} subjects`);
       
       for (const subject of subjects) {
         for (let i = 0; i < 50; i++) {
@@ -28,7 +26,7 @@ async function insertKelas912() {
           const title = `${subject} Kelas ${kelas} - Video ${i + 1}`;
           const description = `Pembelajaran ${subject} untuk kelas ${kelas}`;
           const thumbnail = `https://i.ytimg.com/vi/${videoId}/default.jpg`;
-          
+
           try {
             await sql`
               INSERT INTO videos (videoid, title, description, thumbnail, category, subject, kelas, createdat)
@@ -37,23 +35,24 @@ async function insertKelas912() {
             `;
             totalInserted++;
           } catch (err) {
-            // Skip duplicates silently
+            // Skip duplicates
           }
         }
       }
     }
-    
-    console.log(`[v0] ✓ Inserted ${totalInserted} videos for Kelas 9-12`);
-    
-    // Get total count
+
     const result = await sql`SELECT COUNT(*) as total FROM videos`;
+    console.log(`[v0] Inserted ${totalInserted} videos`);
     console.log(`[v0] Total videos in database: ${result.rows[0].total}`);
     
-    process.exit(0);
-  } catch (err) {
-    console.error('[v0] Error:', err.message);
+  } catch (error) {
+    console.error('[v0] Error:', error.message);
     process.exit(1);
   }
 }
 
-insertKelas912();
+insertKelas912().then(() => {
+  console.log('[v0] ✓ Kelas 9-12 insertion complete!');
+  process.exit(0);
+});
+
