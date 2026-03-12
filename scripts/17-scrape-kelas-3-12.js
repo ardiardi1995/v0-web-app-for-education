@@ -1,6 +1,22 @@
+#!/usr/bin/env node
+
 const pg = require('pg');
 const https = require('https');
 const { Client } = pg;
+
+console.log('[v0] Starting YouTube scraper for Kelas 3-12');
+console.log('[v0] DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
+console.log('[v0] YOUTUBE_API_KEY:', process.env.YOUTUBE_API_KEY ? 'SET' : 'NOT SET');
+
+if (!process.env.DATABASE_URL) {
+  console.error('[v0] DATABASE_URL not set');
+  process.exit(1);
+}
+
+if (!process.env.YOUTUBE_API_KEY) {
+  console.error('[v0] YOUTUBE_API_KEY not set');
+  process.exit(1);
+}
 
 const SUBJECTS_BY_CLASS = {
   3: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS'],
