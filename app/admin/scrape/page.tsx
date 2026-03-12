@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-export default function ScrapeKelas812Page() {
+export default function ScrapeKelas912Page() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
@@ -39,8 +39,8 @@ export default function ScrapeKelas812Page() {
           background: #555;
         }
       `}</style>
-      <h1>Scrape YouTube Videos for Kelas 8-12</h1>
-      <p>This page will scrape real YouTube educational videos for Kelas 8-12</p>
+      <h1>Scrape YouTube Videos for Kelas 9-12</h1>
+      <p>This page will scrape real YouTube educational videos for Kelas 9-12 with multiple search queries per subject</p>
       
       <button 
         onClick={handleScrape} 
@@ -56,7 +56,7 @@ export default function ScrapeKelas812Page() {
           borderRadius: '4px',
         }}
       >
-        {loading ? 'Scraping... (This may take several minutes)' : 'Start Scraping Kelas 8-12'}
+        {loading ? 'Scraping... (This may take 10-15 minutes for 5000+ videos)' : 'Start Scraping Kelas 9-12'}
       </button>
 
       {result && (

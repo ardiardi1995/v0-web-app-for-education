@@ -47,11 +47,12 @@ async function searchYouTubeVideos(query, maxResults = 50) {
 
 export async function POST(request) {
   try {
-    // Only scrape Kelas 8-12 (1-7 already complete)
-    const startKelas = 8;
+    // Scrape Kelas 9-12 (NOT deleting existing data)
+    const startKelas = 9;
     const endKelas = 12;
-    await sql`DELETE FROM videos WHERE kelas >= ${startKelas} AND kelas <= ${endKelas}`;
-    console.log('[v0] Cleared Kelas 8-12 videos to prepare for fresh scrape');
+    
+    // DON'T DELETE - preserve existing data
+    console.log('[v0] Scraping Kelas 9-12 (preserving existing data)');
 
     let totalInserted = 0;
 
@@ -61,21 +62,28 @@ export async function POST(request) {
       const category = getCategory(kelas);
 
       for (const subject of subjects) {
-        // Search keyword: "Matematika Kelas 1", "Fisika Kelas 7", etc
-        const keyword = `${subject} kelas ${kelas}`;
-        console.log(`[v0] Searching for: ${keyword}`);
+        // Multiple search queries per subject for more variety
+        const queries = [
+          `${subject} kelas ${kelas}`,
+          `${subject} SMA ${kelas}`,
+          `belajar ${subject} kelas ${kelas}`,
+          `tutorial ${subject}`,
+          `latihan soal ${subject}`,
+        ];
 
-        const videos = await searchYouTubeVideos(keyword, 50);
+        for (const keyword of queries) {
+          console.log(`[v0] Searching for: ${keyword}`);
+          const videos = await searchYouTubeVideos(keyword, 50);
 
-        if (videos.length === 0) {
-          console.warn(`[v0] No videos found for: ${keyword}`);
-          continue;
-        }
+          if (videos.length === 0) {
+            console.warn(`[v0] No videos found for: ${keyword}`);
+            continue;
+          }
 
-        // Insert videos
-        for (const video of videos) {
-          try {
-            await sql`
+          // Insert videos
+          for (const video of videos) {
+            try {
+              await sql`
               INSERT INTO videos (videoid, title, description, thumbnail, category, subject, kelas, createdat)
               VALUES (
                 ${video.id.videoId},
@@ -94,10 +102,11 @@ export async function POST(request) {
           }
         }
 
-        console.log(`[v0] Inserted ${Math.min(videos.length, 50)} videos for ${subject} Kelas ${kelas}`);
+        console.log(`[v0] Inserted videos for ${subject} Kelas ${kelas}`);
         
-        // Rate limiting: 1 second delay between API calls
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Rate limiting: 500ms delay between searches
+        await new Promise(resolve => setTimeout(resolve, 500));
+        }
       }
     }
 
