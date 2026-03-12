@@ -1,8 +1,9 @@
-import pg from 'pg';
-
+const pg = require('pg');
 const { Client } = pg;
 
-// Mata pelajaran per kelas
+console.log('[v0] Checking environment variables...');
+console.log('[v0] DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
+console.log('[v0] YOUTUBE_API_KEY:', process.env.YOUTUBE_API_KEY ? 'SET' : 'NOT SET');
 const SUBJECTS_BY_CLASS = {
   1: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS'],
   2: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS'],
