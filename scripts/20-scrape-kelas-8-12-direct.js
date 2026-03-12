@@ -5,17 +5,17 @@ const https = require('https');
 const { Client } = pg;
 
 const SUBJECTS_BY_CLASS = {
-  8: ['Matematika', 'Fisika', 'Biologi', 'Kimia', 'Bahasa Indonesia', 'Bahasa Inggris'],
   9: ['Matematika', 'Fisika', 'Biologi', 'Kimia', 'Bahasa Indonesia', 'Bahasa Inggris'],
   10: ['Matematika', 'Fisika', 'Kimia', 'Biologi', 'Bahasa Inggris'],
   11: ['Matematika', 'Fisika', 'Kimia', 'Biologi', 'Bahasa Inggris'],
   12: ['Matematika', 'Fisika', 'Kimia', 'Biologi', 'Bahasa Inggris'],
 };
 
-function youtubeSearch(query) {
-  return new Promise((resolve, reject) => {
+function youtubeSearch(query, pageToken = '') {
+  return new Promise((resolve) => {
     const apiKey = process.env.YOUTUBE_API_KEY;
-    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=50&key=${apiKey}&relevanceLanguage=id`;
+    let searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=50&key=${apiKey}&relevanceLanguage=id`;
+    if (pageToken) searchUrl += `&pageToken=${pageToken}`;
     
     https.get(searchUrl, (res) => {
       let data = '';
@@ -23,16 +23,16 @@ function youtubeSearch(query) {
       res.on('end', () => {
         try {
           const result = JSON.parse(data);
-          resolve(result.items || []);
+          resolve({ items: result.items || [], nextPageToken: result.nextPageToken });
         } catch (err) {
-          resolve([]);
+          resolve({ items: [], nextPageToken: '' });
         }
       });
-    }).on('error', () => resolve([]));
+    }).on('error', () => resolve({ items: [], nextPageToken: '' }));
   });
 }
 
-async function scrapeKelas812() {
+async function scrapeKelas912() {
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
   });
@@ -40,45 +40,74 @@ async function scrapeKelas812() {
   try {
     await client.connect();
     console.log('[v0] Connected to database');
-    
-    await client.query('DELETE FROM videos WHERE kelas >= 8 AND kelas <= 12');
-    console.log('[v0] Cleared Kelas 8-12');
+    console.log('[v0] Scraping Kelas 9-12 (NOT deleting existing data)');
     
     let totalInserted = 0;
     
-    for (let kelas = 8; kelas <= 12; kelas++) {
+    for (let kelas = 9; kelas <= 12; kelas++) {
       const subjects = SUBJECTS_BY_CLASS[kelas];
       console.log(`\n[v0] Scraping Kelas ${kelas}: ${subjects.join(', ')}`);
       
       for (const subject of subjects) {
-        const query = `${subject} kelas ${kelas} pembelajaran`;
-        console.log(`[v0] Searching: "${query}"`);
+        // Multiple search queries per subject to get more videos
+        const queries = [
+          `${subject} kelas ${kelas} pembelajaran`,
+          `${subject} SMA ${kelas}`,
+          `belajar ${subject} kelas ${kelas}`,
+          `tutorial ${subject} kelas ${kelas}`,
+          `latihan ${subject} kelas ${kelas}`,
+        ];
         
-        const videos = await youtubeSearch(query);
-        console.log(`[v0] Found ${videos.length} videos`);
-        
-        for (const video of videos) {
-          try {
-            const videoid = video.id.videoId;
-            const title = video.snippet.title;
-            const description = video.snippet.description;
-            const thumbnail = video.snippet.thumbnails.medium?.url || video.snippet.thumbnails.default?.url;
+        for (const query of queries) {
+          console.log(`[v0] Searching: "${query}"`);
+          
+          let pageToken = '';
+          let pageCount = 0;
+          
+          // Get multiple pages per search (up to 3 pages = 150 videos)
+          while (pageCount < 3) {
+            const result = await youtubeSearch(query, pageToken);
+            const videos = result.items;
             
-            await client.query(
-              'INSERT INTO videos (videoid, title, description, thumbnail, category, subject, kelas, createdat) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())',
-              [videoid, title, description, thumbnail, 'SD', subject, kelas]
-            );
-            totalInserted++;
-          } catch (err) {
-            // Skip duplicates
+            if (videos.length === 0) break;
+            
+            console.log(`[v0] Found ${videos.length} videos (page ${pageCount + 1})`);
+            
+            for (const video of videos) {
+              try {
+                const videoid = video.id.videoId;
+                const title = video.snippet.title;
+                const description = video.snippet.description;
+                const thumbnail = video.snippet.thumbnails.medium?.url || video.snippet.thumbnails.default?.url;
+                
+                await client.query(
+                  'INSERT INTO videos (videoid, title, description, thumbnail, category, subject, kelas, createdat) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())',
+                  [videoid, title, description, thumbnail, 'SD', subject, kelas]
+                );
+                totalInserted++;
+              } catch (err) {
+                // Skip duplicates
+              }
+            }
+            
+            pageToken = result.nextPageToken;
+            if (!pageToken) break;
+            
+            pageCount++;
+            await new Promise(resolve => setTimeout(resolve, 300));
           }
+          
+          await new Promise(resolve => setTimeout(resolve, 300));
         }
-        
-        await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
     
-    console.log(`\n[v0] Total videos inserted: ${totalInserted}`);
+    console.log(`\n[v0] Total videos inserted for Kelas 9-12: ${totalInserted}`);
+    
+    // Check final count
+    const countResult = await client.query('SELECT COUNT(*) as total FROM videos');
+    console.log(`[v0] Grand total videos in database: ${countResult.rows[0].total}`);
+    
     await client.end();
     process.exit(0);
   } catch (err) {
@@ -87,4 +116,4 @@ async function scrapeKelas812() {
   }
 }
 
-scrapeKelas812();
+scrapeKelas912();
