@@ -1,47 +1,51 @@
 #!/usr/bin/env node
 
-const http = require('http');
+const pg = require('pg');
+const { Client } = pg;
 
-async function triggerScraping() {
-  console.log('[v0] Triggering YouTube scraper for Kelas 7-12...');
-  
-  return new Promise((resolve, reject) => {
-    const options = {
-      hostname: 'localhost',
-      port: 3000,
-      path: '/api/scrape-youtube-real',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
+console.log('[v0] Checking video counts for Kelas 7-12...');
 
-    const req = http.request(options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        try {
-          const result = JSON.parse(data);
-          console.log('[v0] Scraping result:', result);
-          resolve(result);
-        } catch (err) {
-          reject(err);
-        }
-      });
-    });
+const client = new Client({
+  connectionString: process.env.DATABASE_URL,
+});
 
-    req.on('error', reject);
-    req.write(JSON.stringify({}));
-    req.end();
-  });
-}
-
-triggerScraping()
+client.connect()
+  .then(() => {
+    console.log('[v0] Database connected\n');
+    return client.query('SELECT kelas, subject, COUNT(*) as count FROM videos WHERE kelas BETWEEN 7 AND 12 GROUP BY kelas, subject ORDER BY kelas, subject');
+  })
   .then((result) => {
-    console.log('[v0] Success! Total videos: ', result.totalVideos);
+    console.log('[v0] Video count per Kelas and Subject:');
+    console.log('===================================================');
+    
+    if (result.rows.length === 0) {
+      console.log('[v0] No videos found in Kelas 7-12');
+    } else {
+      const grouped = {};
+      result.rows.forEach(row => {
+        if (!grouped[row.kelas]) grouped[row.kelas] = [];
+        grouped[row.kelas].push(row);
+      });
+      
+      Object.keys(grouped).sort((a,b) => a-b).forEach(kelas => {
+        let total = 0;
+        console.log(`\nKelas ${kelas}:`);
+        grouped[kelas].forEach(row => {
+          console.log(`  - ${row.subject}: ${row.count} videos`);
+          total += parseInt(row.count);
+        });
+        console.log(`  Total Kelas ${kelas}: ${total}`);
+      });
+    }
+    
+    console.log('\n===================================================');
+    return client.query('SELECT COUNT(*) as total FROM videos WHERE kelas BETWEEN 7 AND 12');
+  })
+  .then((result) => {
+    console.log(`[v0] Total videos in Kelas 7-12: ${result.rows[0].total}`);
     process.exit(0);
   })
   .catch((err) => {
-    console.error('[v0] Failed:', err.message);
+    console.error('[v0] Error:', err.message);
     process.exit(1);
   });
