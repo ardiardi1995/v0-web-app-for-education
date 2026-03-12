@@ -47,14 +47,16 @@ async function searchYouTubeVideos(query, maxResults = 50) {
 
 export async function POST(request) {
   try {
-    // Delete existing videos
-    await sql`DELETE FROM videos`;
-    console.log('[v0] Cleared all videos');
+    // Only scrape Kelas 6-12 (1-5 already complete)
+    const startKelas = 6;
+    const endKelas = 12;
+    await sql`DELETE FROM videos WHERE kelas >= ${startKelas} AND kelas <= ${endKelas}`;
+    console.log('[v0] Cleared Kelas 6-12 videos to prepare for fresh scrape');
 
     let totalInserted = 0;
 
-    // For each class and subject combination
-    for (const kelas of Object.keys(SUBJECTS_BY_CLASS).map(Number)) {
+    // For each class and subject combination (only Kelas 6-12)
+    for (const kelas of Object.keys(SUBJECTS_BY_CLASS).map(Number).filter(k => k >= startKelas && k <= endKelas)) {
       const subjects = SUBJECTS_BY_CLASS[kelas];
       const category = getCategory(kelas);
 
