@@ -18,7 +18,7 @@ export async function GET(request) {
       `SELECT id, videoid, title, description, thumbnail, category, subject, kelas, createdat 
        FROM videos 
        ORDER BY createdat DESC 
-       LIMIT 1000`
+       LIMIT 10000`
     );
 
     const videos = result.rows.map(row => ({
