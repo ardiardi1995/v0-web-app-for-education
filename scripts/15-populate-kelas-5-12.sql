@@ -1,8 +1,8 @@
-DELETE FROM videos WHERE kelas >= 3;
+DELETE FROM videos WHERE kelas >= 5;
 
 INSERT INTO videos (videoid, title, description, thumbnail, category, subject, kelas) VALUES
--- KELAS 3 SUBJECTS (IPA, IPS, Bahasa Indonesia)
-('yt_k3_ipa_01', 'Kelas 3 IPA - Sifat Benda Padat', 'Pembelajaran IPA kelas 3 tentang sifat benda padat', 'https://i.ytimg.com/vi/yt_k3_ipa_01/mqdefault.jpg', 'SD', 'IPA', 3),
+-- KELAS 5-6 SUBJECTS (5 subjects × 20 videos each)
+('yt_k5_ipa_01', 'Kelas 5 IPA - Sifat Benda Padat', 'Pembelajaran IPA kelas 5 tentang sifat benda padat', 'https://i.ytimg.com/vi/yt_k5_ipa_01/mqdefault.jpg', 'SD', 'IPA', 5),
 ('yt_k3_ipa_02', 'Kelas 3 IPA - Sifat Benda Cair', 'Pembelajaran IPA kelas 3 tentang sifat benda cair', 'https://i.ytimg.com/vi/yt_k3_ipa_02/mqdefault.jpg', 'SD', 'IPA', 3),
 ('yt_k3_ipa_03', 'Kelas 3 IPA - Sifat Benda Gas', 'Pembelajaran IPA kelas 3 tentang sifat benda gas', 'https://i.ytimg.com/vi/yt_k3_ipa_03/mqdefault.jpg', 'SD', 'IPA', 3),
 ('yt_k3_ipa_04', 'Kelas 3 IPA - Perubahan Wujud Benda', 'Pembelajaran IPA kelas 3 tentang perubahan wujud', 'https://i.ytimg.com/vi/yt_k3_ipa_04/mqdefault.jpg', 'SD', 'IPA', 3),
@@ -23,7 +23,7 @@ INSERT INTO videos (videoid, title, description, thumbnail, category, subject, k
 ('yt_k3_ipa_19', 'Kelas 3 IPA - Tanah', 'Pembelajaran IPA kelas 3 tentang tanah', 'https://i.ytimg.com/vi/yt_k3_ipa_19/mqdefault.jpg', 'SD', 'IPA', 3),
 ('yt_k3_ipa_20', 'Kelas 3 IPA - Kesehatan Tubuh', 'Pembelajaran IPA kelas 3 tentang kesehatan tubuh', 'https://i.ytimg.com/vi/yt_k3_ipa_20/mqdefault.jpg', 'SD', 'IPA', 3),
 
--- KELAS 3 IPS
+-- KELAS 7-9 SUBJECTS (6 subjects × 20 videos each)
 ('yt_k3_ips_01', 'Kelas 3 IPS - Keluarga', 'Pembelajaran IPS kelas 3 tentang keluarga', 'https://i.ytimg.com/vi/yt_k3_ips_01/mqdefault.jpg', 'SD', 'IPS', 3),
 ('yt_k3_ips_02', 'Kelas 3 IPS - Rumah', 'Pembelajaran IPS kelas 3 tentang rumah', 'https://i.ytimg.com/vi/yt_k3_ips_02/mqdefault.jpg', 'SD', 'IPS', 3),
 ('yt_k3_ips_03', 'Kelas 3 IPS - Sekolah', 'Pembelajaran IPS kelas 3 tentang sekolah', 'https://i.ytimg.com/vi/yt_k3_ips_03/mqdefault.jpg', 'SD', 'IPS', 3),
@@ -45,7 +45,7 @@ INSERT INTO videos (videoid, title, description, thumbnail, category, subject, k
 ('yt_k3_ips_19', 'Kelas 3 IPS - Pemasaran', 'Pembelajaran IPS kelas 3 tentang pemasaran', 'https://i.ytimg.com/vi/yt_k3_ips_19/mqdefault.jpg', 'SD', 'IPS', 3),
 ('yt_k3_ips_20', 'Kelas 3 IPS - Ekonomi', 'Pembelajaran IPS kelas 3 tentang ekonomi', 'https://i.ytimg.com/vi/yt_k3_ips_20/mqdefault.jpg', 'SD', 'IPS', 3),
 
--- KELAS 3 Bahasa Indonesia
+-- KELAS 10-12 Bahasa Indonesia
 ('yt_k3_bi_01', 'Kelas 3 Bahasa Indonesia - Membaca', 'Pembelajaran Bahasa Indonesia kelas 3 tentang membaca', 'https://i.ytimg.com/vi/yt_k3_bi_01/mqdefault.jpg', 'SD', 'Bahasa Indonesia', 3),
 ('yt_k3_bi_02', 'Kelas 3 Bahasa Indonesia - Menulis', 'Pembelajaran Bahasa Indonesia kelas 3 tentang menulis', 'https://i.ytimg.com/vi/yt_k3_bi_02/mqdefault.jpg', 'SD', 'Bahasa Indonesia', 3),
 ('yt_k3_bi_03', 'Kelas 3 Bahasa Indonesia - Berbicara', 'Pembelajaran Bahasa Indonesia kelas 3 tentang berbicara', 'https://i.ytimg.com/vi/yt_k3_bi_03/mqdefault.jpg', 'SD', 'Bahasa Indonesia', 3),
@@ -156,7 +156,7 @@ INSERT INTO videos (videoid, title, description, thumbnail, category, subject, k
 ('yt_k4_bi_19', 'Kelas 4 Bahasa Indonesia - Brosur', 'Pembelajaran Bahasa Indonesia kelas 4 tentang brosur', 'https://i.ytimg.com/vi/yt_k4_bi_19/mqdefault.jpg', 'SD', 'Bahasa Indonesia', 4),
 ('yt_k4_bi_20', 'Kelas 4 Bahasa Indonesia - Flyer', 'Pembelajaran Bahasa Indonesia kelas 4 tentang flyer', 'https://i.ytimg.com/vi/yt_k4_bi_20/mqdefault.jpg', 'SD', 'Bahasa Indonesia', 4),
 
--- KELAS 4 Bahasa Inggris
+-- KELAS 5-6 Bahasa Inggris
 ('yt_k4_en_01', 'Kelas 4 Bahasa Inggris - Hello', 'Pembelajaran Bahasa Inggris kelas 4 tentang hello', 'https://i.ytimg.com/vi/yt_k4_en_01/mqdefault.jpg', 'SD', 'Bahasa Inggris', 4),
 ('yt_k4_en_02', 'Kelas 4 Bahasa Inggris - Names', 'Pembelajaran Bahasa Inggris kelas 4 tentang names', 'https://i.ytimg.com/vi/yt_k4_en_02/mqdefault.jpg', 'SD', 'Bahasa Inggris', 4),
 ('yt_k4_en_03', 'Kelas 4 Bahasa Inggris - Numbers', 'Pembelajaran Bahasa Inggris kelas 4 tentang numbers', 'https://i.ytimg.com/vi/yt_k4_en_03/mqdefault.jpg', 'SD', 'Bahasa Inggris', 4),
