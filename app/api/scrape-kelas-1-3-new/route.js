@@ -13,17 +13,29 @@ async function searchYouTube(query) {
   const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=25&type=video&key=${apiKey}`;
 
   try {
+    console.log(`[v0] DEBUG - API Key present: ${apiKey ? 'YES (length: ' + apiKey.length + ')' : 'NO'}`);
+    console.log(`[v0] DEBUG - URL: ${url.substring(0, 100)}...`);
+    
     const response = await fetch(url);
+    console.log(`[v0] DEBUG - Response status: ${response.status}`);
+    
     if (response.status === 403) {
-      console.log(`[v0] Quota exceeded for: ${query}`);
+      const errorData = await response.json();
+      console.log(`[v0] DEBUG - 403 Error: ${JSON.stringify(errorData)}`);
       return [];
     }
-    if (!response.ok) return [];
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log(`[v0] ERROR - ${response.status}: ${errorText}`);
+      return [];
+    }
     
     const data = await response.json();
+    console.log(`[v0] Got ${data.items ? data.items.length : 0} results for: ${query}`);
     return data.items || [];
   } catch (err) {
-    console.error(`[v0] Error: ${err.message}`);
+    console.error(`[v0] Fetch error: ${err.message}`);
     return [];
   }
 }
