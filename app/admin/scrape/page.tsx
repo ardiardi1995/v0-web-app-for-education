@@ -11,7 +11,7 @@ export default function ScrapeAllClassesPage() {
     setLoading(kelas);
     setLogs([`Starting YouTube scrape for Kelas ${kelas}...`]);
     try {
-      const response = await fetch('/api/scrape-by-kelas', {
+      const response = await fetch('/api/scrape-fresh', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ kelas }),
