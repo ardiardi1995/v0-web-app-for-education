@@ -1,4 +1,4 @@
-import { neon } from '@neondatabase/serverless';
+const { neon } = await import('@neondatabase/serverless');
 
 console.log('[v0] Starting scraper for classes 1-3...');
 
