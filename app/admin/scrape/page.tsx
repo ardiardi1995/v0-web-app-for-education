@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 
-export default function ScrapePage() {
+export default function ScrapeAdminPage() {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<any>(null);
   const [logs, setLogs] = useState<string[]>([]);
 
   const handleScrape = async () => {
@@ -31,7 +31,7 @@ export default function ScrapePage() {
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial', maxWidth: '900px', margin: '0 auto' }}>
       <h1>Scrape YouTube Videos - Kelas 1-3</h1>
-      <p>Scrape educational videos from YouTube for classes 1-3 (SD)</p>
+      <p>Scrape educational videos from YouTube for classes 1-3 (SD). This will insert all videos directly into the database.</p>
       
       <button 
         onClick={handleScrape} 
@@ -48,7 +48,7 @@ export default function ScrapePage() {
           opacity: loading ? 0.6 : 1,
         }}
       >
-        {loading ? 'Scraping... (Please wait ~3-5 minutes)' : 'START SCRAPE'}
+        {loading ? 'Scraping... Please wait (~3-5 minutes)' : 'START SCRAPE KELAS 1-3'}
       </button>
 
       {logs.length > 0 && (
