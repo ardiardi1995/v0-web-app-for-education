@@ -3,18 +3,18 @@
 import { useState } from 'react';
 
 export default function ScrapeAllClassesPage() {
-  const [loading, setLoading] = useState(false);
-  const [scrapingType, setScrapingType] = useState<'youtube' | 'sample' | null>(null);
+  const [loading, setLoading] = useState<number | null>(null);
   const [result, setResult] = useState(null);
   const [logs, setLogs] = useState<string[]>([]);
 
-  const handleScrapeYouTube = async () => {
-    setLoading(true);
-    setScrapingType('youtube');
-    setLogs(['Starting YouTube scrape for kelas 1-3...']);
+  const handleScrapeByKelas = async (kelas: number) => {
+    setLoading(kelas);
+    setLogs([`Starting YouTube scrape for Kelas ${kelas}...`]);
     try {
-      const response = await fetch('/api/scrape-youtube-real', {
+      const response = await fetch('/api/scrape-by-kelas', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kelas }),
       });
       const data = await response.json();
       setResult(data);
@@ -23,104 +23,69 @@ export default function ScrapeAllClassesPage() {
       setResult({ error: error.message, success: false });
       setLogs(prev => [...prev, `Error: ${error.message}`]);
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSeedSampleData = async () => {
-    setLoading(true);
-    setScrapingType('sample');
-    setLogs(['Starting to seed sample educational videos...']);
-    try {
-      const response = await fetch('/api/seed-sample-videos', {
-        method: 'POST',
-      });
-      const data = await response.json();
-      setResult(data);
-      setLogs(prev => [...prev, JSON.stringify(data, null, 2)]);
-    } catch (error) {
-      setResult({ error: error.message, success: false });
-      setLogs(prev => [...prev, `Error: ${error.message}`]);
-    } finally {
-      setLoading(false);
+      setLoading(null);
     }
   };
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial', overflow: 'auto', height: '100vh', scrollbarWidth: 'auto', scrollbarColor: '#888 #f1f1f1' }}>
       <style>{`
-        /* For Chrome, Edge, and Safari */
-        ::-webkit-scrollbar {
-          width: 12px;
-        }
-        ::-webkit-scrollbar-track {
-          background: #f1f1f1;
-        }
-        ::-webkit-scrollbar-thumb {
-          background: #888;
-          border-radius: 6px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-          background: #555;
-        }
-        button {
-          margin-right: 10px;
-          margin-bottom: 10px;
-        }
+        ::-webkit-scrollbar { width: 12px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 6px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        .kelas-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 15px 0; }
+        button { padding: 8px 12px; font-size: 14px; cursor: pointer; border: none; border-radius: 4px; transition: opacity 0.2s; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        button:hover:not(:disabled) { opacity: 0.9; }
+        .sd { background-color: #4CAF50; color: white; }
+        .smp { background-color: #2196F3; color: white; }
+        .sma { background-color: #FF9800; color: white; }
       `}</style>
-      <h1>Populate Database with Educational Videos</h1>
-      <p>Choose one of the options below to populate the database with videos for classes 1-3:</p>
       
-      <div style={{ marginTop: '20px', paddingBottom: '20px', borderBottom: '2px solid #ddd' }}>
-        <h2>Option 1: YouTube Real Videos (Requires YouTube API Key)</h2>
-        <p>Scrapes real educational videos from YouTube for classes 1-3. Note: This may hit API quota limits.</p>
-        <button 
-          onClick={handleScrapeYouTube} 
-          disabled={loading}
-          style={{
-            padding: '10px 20px',
-            fontSize: '16px',
-            cursor: loading && scrapingType === 'youtube' ? 'not-allowed' : 'pointer',
-            opacity: loading && scrapingType === 'youtube' ? 0.6 : 1,
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-          }}
-        >
-          {loading && scrapingType === 'youtube' ? 'Scraping YouTube... (This may take 5-10 minutes)' : 'Scrape from YouTube'}
-        </button>
+      <h1>Scrape YouTube Videos Per Kelas</h1>
+      <p>Click tombol di bawah untuk scrape YouTube videos untuk setiap kelas. Setiap kelas di-scrape terpisah agar quota API aman.</p>
+      
+      <h2>SD Kelas 1-6</h2>
+      <div className="kelas-group">
+        {[1, 2, 3, 4, 5, 6].map(kelas => (
+          <button
+            key={kelas}
+            onClick={() => handleScrapeByKelas(kelas)}
+            disabled={loading !== null}
+            className="sd"
+          >
+            {loading === kelas ? `Scraping...` : `Kelas ${kelas}`}
+          </button>
+        ))}
       </div>
 
-      <div style={{ marginTop: '20px', paddingBottom: '20px', borderBottom: '2px solid #ddd' }}>
-        <h2>Option 2: Seed Sample Educational Videos (Recommended)</h2>
-        <p>Inserts high-quality sample educational videos for classes 1-3 with all subjects:</p>
-        <ul>
-          <li>Matematika</li>
-          <li>Bahasa Indonesia</li>
-          <li>IPAS (Ilmu Pengetahuan Alam dan Sosial)</li>
-          <li>Pendidikan Pancasila</li>
-          <li>Pendidikan Agama Islam</li>
-          <li>Seni Budaya</li>
-          <li>PJOK (Pendidikan Jasmani, Olahraga, dan Kesehatan)</li>
-        </ul>
-        <p><strong>Total: 112 videos (16 per subject/class combination)</strong></p>
-        <button 
-          onClick={handleSeedSampleData} 
-          disabled={loading}
-          style={{
-            padding: '10px 20px',
-            fontSize: '16px',
-            cursor: loading && scrapingType === 'sample' ? 'not-allowed' : 'pointer',
-            opacity: loading && scrapingType === 'sample' ? 0.6 : 1,
-            backgroundColor: '#28a745',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-          }}
-        >
-          {loading && scrapingType === 'sample' ? 'Seeding Sample Data...' : 'Seed Sample Videos (Fast & Reliable)'}
-        </button>
+      <h2>SMP Kelas 7-9</h2>
+      <div className="kelas-group">
+        {[7, 8, 9].map(kelas => (
+          <button
+            key={kelas}
+            onClick={() => handleScrapeByKelas(kelas)}
+            disabled={loading !== null}
+            className="smp"
+          >
+            {loading === kelas ? `Scraping...` : `Kelas ${kelas}`}
+          </button>
+        ))}
+      </div>
+
+      <h2>SMA Kelas 10-12</h2>
+      <div className="kelas-group">
+        {[10, 11, 12].map(kelas => (
+          <button
+            key={kelas}
+            onClick={() => handleScrapeByKelas(kelas)}
+            disabled={loading !== null}
+            className="sma"
+          >
+            {loading === kelas ? `Scraping...` : `Kelas ${kelas}`}
+          </button>
+        ))}
       </div>
 
       {logs.length > 0 && (
@@ -137,10 +102,10 @@ export default function ScrapeAllClassesPage() {
       {result && (
         <div style={{ marginTop: '20px', padding: '10px', backgroundColor: result.success ? '#d4edda' : '#f8d7da', borderRadius: '4px', border: `1px solid ${result.success ? '#c3e6cb' : '#f5c6cb'}` }}>
           <h3 style={{ color: result.success ? '#155724' : '#721c24' }}>
-            {result.success ? '✓ Success!' : '✗ Error'}
+            {result.success ? '✓ Sukses!' : '✗ Error'}
           </h3>
           <p>{result.message || result.error}</p>
-          {result.totalVideos && <p><strong>Total videos inserted: {result.totalVideos}</strong></p>}
+          {result.totalVideos && <p><strong>Total videos: {result.totalVideos}</strong></p>}
         </div>
       )}
     </div>
