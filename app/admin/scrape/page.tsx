@@ -27,6 +27,24 @@ export default function ScrapeAllClassesPage() {
     }
   };
 
+  const handleInsertSampleData = async () => {
+    setLoading(-1);
+    setLogs(['Starting to insert sample educational data...']);
+    try {
+      const response = await fetch('/api/insert-sample-data', {
+        method: 'POST',
+      });
+      const data = await response.json();
+      setResult(data);
+      setLogs(prev => [...prev, JSON.stringify(data, null, 2)]);
+    } catch (error) {
+      setResult({ error: error.message, success: false });
+      setLogs(prev => [...prev, `Error: ${error.message}`]);
+    } finally {
+      setLoading(null);
+    }
+  };
+
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial', overflow: 'auto', height: '100vh', scrollbarWidth: 'auto', scrollbarColor: '#888 #f1f1f1' }}>
       <style>{`
@@ -46,7 +64,29 @@ export default function ScrapeAllClassesPage() {
       <h1>Scrape YouTube Videos Per Kelas</h1>
       <p>Click tombol di bawah untuk scrape YouTube videos untuk setiap kelas. Setiap kelas di-scrape terpisah agar quota API aman.</p>
       
-      <h2>SD Kelas 1-6</h2>
+      <div style={{ marginBottom: '30px', padding: '15px', backgroundColor: '#fff3cd', borderRadius: '4px', border: '1px solid #ffc107' }}>
+        <h3 style={{ marginTop: 0, color: '#856404' }}>⚠️ YouTube API Quota Habis?</h3>
+        <p style={{ color: '#856404' }}>Jika YouTube API terus mengembalikan error "quota exceeded", gunakan tombol di bawah untuk insert data sample yang siap pakai:</p>
+        <button 
+          onClick={handleInsertSampleData} 
+          disabled={loading !== null}
+          style={{
+            padding: '12px 20px',
+            fontSize: '16px',
+            cursor: loading !== null ? 'not-allowed' : 'pointer',
+            opacity: loading !== null ? 0.6 : 1,
+            backgroundColor: '#ffc107',
+            color: '#333',
+            border: 'none',
+            borderRadius: '4px',
+            fontWeight: 'bold',
+          }}
+        >
+          {loading === -1 ? 'Inserting...' : '📥 Insert Sample Educational Data (Kelas 1-12)'}
+        </button>
+      </div>
+
+      <h2>Atau Scrape Per Kelas dari YouTube</h2>
       <div className="kelas-group">
         {[1, 2, 3, 4, 5, 6].map(kelas => (
           <button
