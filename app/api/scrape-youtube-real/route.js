@@ -1,19 +1,10 @@
-import { sql } from '@vercel/postgres';
+import { neon } from '@neondatabase/serverless';
 
-// Mata pelajaran per kelas berdasarkan Kurikulum Merdeka (dengan mata pelajaran wajib)
+// Mata pelajaran untuk kelas 1-3 (SD) - IPAS menggabungkan IPA dan IPS
 const SUBJECTS_BY_CLASS = {
-  1: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
-  2: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
-  3: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
-  4: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS', 'Bahasa Inggris', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
-  5: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS', 'Bahasa Inggris', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
-  6: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS', 'Bahasa Inggris', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
-  7: ['Matematika', 'Fisika', 'Biologi', 'Kimia', 'Bahasa Indonesia', 'Bahasa Inggris', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
-  8: ['Matematika', 'Fisika', 'Biologi', 'Kimia', 'Bahasa Indonesia', 'Bahasa Inggris', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
-  9: ['Matematika', 'Fisika', 'Biologi', 'Kimia', 'Bahasa Indonesia', 'Bahasa Inggris', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
-  10: ['Matematika', 'Fisika', 'Kimia', 'Biologi', 'Bahasa Inggris', 'Pendidikan Pancasila', 'Sejarah Indonesia', 'Seni Budaya', 'PJOK'],
-  11: ['Matematika', 'Fisika', 'Kimia', 'Biologi', 'Bahasa Inggris', 'Pendidikan Pancasila', 'Sejarah Indonesia', 'Seni Budaya', 'PJOK'],
-  12: ['Matematika', 'Fisika', 'Kimia', 'Biologi', 'Bahasa Inggris', 'Pendidikan Pancasila', 'Sejarah Indonesia', 'Seni Budaya', 'PJOK'],
+  1: ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
+  2: ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
+  3: ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
 };
 
 // Get category for class
@@ -24,7 +15,7 @@ function getCategory(kelas) {
 }
 
 // Search YouTube for videos
-async function searchYouTubeVideos(query, maxResults = 50) {
+async function searchYouTubeVideos(query, maxResults = 20) {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey) {
     throw new Error('YOUTUBE_API_KEY not set');
@@ -40,39 +31,65 @@ async function searchYouTubeVideos(query, maxResults = 50) {
     const data = await response.json();
     return data.items || [];
   } catch (error) {
-    console.error(`Error searching YouTube for "${query}":`, error);
+    console.error(`[v0] Error searching YouTube for "${query}":`, error);
     return [];
   }
 }
 
 export async function POST(request) {
   try {
-    // Scrape ALL kelas 1-12 for mandatory subjects (NOT deleting existing data)
-    const startKelas = 1;
-    const endKelas = 12;
+    if (!process.env.DATABASE_URL) {
+      return Response.json({ error: 'DATABASE_URL not set', success: false }, { status: 500 });
+    }
+
+    const sql = neon(process.env.DATABASE_URL);
     
-    console.log('[v0] Starting scrape for ALL kelas 1-12 with mandatory subjects (preserving existing data)');
+    console.log('[v0] Starting scrape for kelas 1-3 with IPAS and mandatory subjects');
+
+    // Step 1: Create table if doesn't exist
+    console.log('[v0] Creating videos table...');
+    await sql`
+      CREATE TABLE IF NOT EXISTS videos (
+        id SERIAL PRIMARY KEY,
+        videoid VARCHAR(255) UNIQUE NOT NULL,
+        title VARCHAR(500) NOT NULL,
+        description TEXT,
+        thumbnail VARCHAR(500),
+        subject VARCHAR(100),
+        kelas INT,
+        category VARCHAR(50),
+        createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    console.log('[v0] Videos table created/verified');
+
+    // Step 2: Delete old IPA and IPS data
+    console.log('[v0] Deleting old IPA and IPS data...');
+    try {
+      await sql`DELETE FROM videos WHERE subject IN ('IPA', 'IPS')`;
+      console.log('[v0] Deleted old IPA and IPS data');
+    } catch (e) {
+      console.log('[v0] No old data to delete');
+    }
 
     let totalInserted = 0;
 
-    // For each class and subject combination (only Kelas 6-12)
-    for (const kelas of Object.keys(SUBJECTS_BY_CLASS).map(Number).filter(k => k >= startKelas && k <= endKelas)) {
+    // For each class and subject combination (only Kelas 1-3)
+    for (const kelas of [1, 2, 3]) {
       const subjects = SUBJECTS_BY_CLASS[kelas];
       const category = getCategory(kelas);
 
       for (const subject of subjects) {
-        // Multiple search queries per subject for more variety
-        const queries = [
+        // Search queries per subject
+        const keywords = [
+          `${subject} kelas ${kelas} pelajaran SD`,
           `${subject} kelas ${kelas}`,
-          `${subject} SMA ${kelas}`,
-          `belajar ${subject} kelas ${kelas}`,
-          `tutorial ${subject}`,
-          `latihan soal ${subject}`,
+          `belajar ${subject}`,
         ];
 
-        for (const keyword of queries) {
+        for (const keyword of keywords) {
           console.log(`[v0] Searching for: ${keyword}`);
-          const videos = await searchYouTubeVideos(keyword, 50);
+          const videos = await searchYouTubeVideos(keyword, 20);
 
           if (videos.length === 0) {
             console.warn(`[v0] No videos found for: ${keyword}`);
@@ -83,28 +100,29 @@ export async function POST(request) {
           for (const video of videos) {
             try {
               await sql`
-              INSERT INTO videos (videoid, title, description, thumbnail, category, subject, kelas, createdat)
-              VALUES (
-                ${video.id.videoId},
-                ${video.snippet.title},
-                ${video.snippet.description || ''},
-                ${video.snippet.thumbnails?.medium?.url || 'https://i.ytimg.com/vi/default/mqdefault.jpg'},
-                ${category},
-                ${subject},
-                ${kelas},
-                NOW()
-              )
-            `;
-            totalInserted++;
-          } catch (err) {
-            console.warn(`[v0] Failed to insert video: ${video.snippet.title}`, err.message);
+                INSERT INTO videos (videoid, title, description, thumbnail, category, subject, kelas, createdat)
+                VALUES (
+                  ${video.id.videoId},
+                  ${video.snippet.title},
+                  ${video.snippet.description || ''},
+                  ${video.snippet.thumbnails?.medium?.url || 'https://i.ytimg.com/vi/default/mqdefault.jpg'},
+                  ${category},
+                  ${subject},
+                  ${kelas},
+                  NOW()
+                )
+                ON CONFLICT (videoid) DO NOTHING
+              `;
+              totalInserted++;
+            } catch (err) {
+              console.warn(`[v0] Failed to insert video: ${video.snippet.title}`, err.message);
+            }
           }
-        }
 
-        console.log(`[v0] Inserted videos for ${subject} Kelas ${kelas}`);
-        
-        // Rate limiting: 500ms delay between searches
-        await new Promise(resolve => setTimeout(resolve, 500));
+          console.log(`[v0] Inserted videos for ${keyword}`);
+          
+          // Rate limiting: 800ms delay between searches
+          await new Promise(resolve => setTimeout(resolve, 800));
         }
       }
     }
@@ -113,7 +131,7 @@ export async function POST(request) {
 
     return Response.json({
       success: true,
-      message: `Successfully scraped and inserted ${totalInserted} videos from YouTube`,
+      message: `Successfully scraped and inserted ${totalInserted} videos from YouTube for kelas 1-3 with IPAS and mandatory subjects`,
       totalVideos: totalInserted,
     });
   } catch (error) {
@@ -122,6 +140,7 @@ export async function POST(request) {
       {
         error: error.message,
         message: 'Failed to scrape YouTube videos',
+        success: false,
       },
       { status: 500 }
     );
