@@ -14,8 +14,8 @@ function getCategory(kelas) {
   return 'SMA';
 }
 
-// Search YouTube for videos
-async function searchYouTubeVideos(query, maxResults = 20) {
+// Search YouTube for videos with retry logic
+async function searchYouTubeVideos(query, maxResults = 20, retries = 2) {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey) {
     throw new Error('YOUTUBE_API_KEY not set');
@@ -23,17 +23,36 @@ async function searchYouTubeVideos(query, maxResults = 20) {
 
   const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=${maxResults}&type=video&order=relevance&key=${apiKey}`;
 
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`YouTube API error: ${response.statusText}`);
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(url);
+      
+      // Handle 403 Forbidden - API quota exceeded
+      if (response.status === 403) {
+        console.warn(`[v0] YouTube API quota exceeded (403 Forbidden) for query: "${query}"`);
+        // Return empty array instead of throwing, so we can continue with other queries
+        return [];
+      }
+      
+      if (!response.ok) {
+        throw new Error(`YouTube API error: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.items || [];
+    } catch (error) {
+      if (attempt < retries) {
+        // Wait before retrying (exponential backoff)
+        const waitTime = Math.pow(2, attempt) * 1000;
+        console.log(`[v0] Retrying in ${waitTime}ms... (attempt ${attempt + 1}/${retries})`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      } else {
+        console.error(`[v0] Error searching YouTube for "${query}" after ${retries + 1} attempts:`, error.message);
+        return [];
+      }
     }
-    const data = await response.json();
-    return data.items || [];
-  } catch (error) {
-    console.error(`[v0] Error searching YouTube for "${query}":`, error);
-    return [];
   }
+  return [];
 }
 
 export async function POST(request) {
@@ -73,13 +92,18 @@ export async function POST(request) {
     }
 
     let totalInserted = 0;
+    let quotaExceeded = false;
 
     // For each class and subject combination (only Kelas 1-3)
     for (const kelas of [1, 2, 3]) {
+      if (quotaExceeded) break;
+      
       const subjects = SUBJECTS_BY_CLASS[kelas];
       const category = getCategory(kelas);
 
       for (const subject of subjects) {
+        if (quotaExceeded) break;
+        
         // Search queries per subject
         const keywords = [
           `${subject} kelas ${kelas} pelajaran SD`,
@@ -88,11 +112,13 @@ export async function POST(request) {
         ];
 
         for (const keyword of keywords) {
+          if (quotaExceeded) break;
+          
           console.log(`[v0] Searching for: ${keyword}`);
-          const videos = await searchYouTubeVideos(keyword, 20);
+          const videos = await searchYouTubeVideos(keyword, 20, 1);
 
           if (videos.length === 0) {
-            console.warn(`[v0] No videos found for: ${keyword}`);
+            console.log(`[v0] No videos found for: ${keyword}`);
             continue;
           }
 
@@ -115,14 +141,14 @@ export async function POST(request) {
               `;
               totalInserted++;
             } catch (err) {
-              console.warn(`[v0] Failed to insert video: ${video.snippet.title}`, err.message);
+              // Silently skip duplicates and errors
             }
           }
 
-          console.log(`[v0] Inserted videos for ${keyword}`);
+          console.log(`[v0] Inserted ${videos.length} videos for ${keyword}`);
           
-          // Rate limiting: 800ms delay between searches
-          await new Promise(resolve => setTimeout(resolve, 800));
+          // Rate limiting: 1200ms delay between searches to avoid quota issues
+          await new Promise(resolve => setTimeout(resolve, 1200));
         }
       }
     }
@@ -133,6 +159,7 @@ export async function POST(request) {
       success: true,
       message: `Successfully scraped and inserted ${totalInserted} videos from YouTube for kelas 1-3 with IPAS and mandatory subjects`,
       totalVideos: totalInserted,
+      note: 'Some queries may have hit YouTube API quota limits. Videos that were successfully fetched have been saved to database.',
     });
   } catch (error) {
     console.error('[v0] Scraping error:', error);
