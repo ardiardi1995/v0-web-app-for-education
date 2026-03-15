@@ -39,6 +39,27 @@ export default function ScrapeAdminPage() {
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial', maxWidth: '900px', margin: '0 auto' }} suppressHydrationWarning>
+      <style>{`
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar {
+          width: 12px;
+        }
+        ::-webkit-scrollbar-track {
+          background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #888;
+          border-radius: 6px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #555;
+        }
+        .logs-container {
+          scrollbar-width: auto;
+          scrollbar-color: #888 #f1f1f1;
+        }
+      `}</style>
+
       <h1>Scrape YouTube Videos - Kelas 1-3</h1>
       <p>Scrape educational videos from YouTube for classes 1-3 (SD). This will insert all videos directly into the database.</p>
       
@@ -61,7 +82,7 @@ export default function ScrapeAdminPage() {
       </button>
 
       {logs.length > 0 && (
-        <div style={{ marginTop: '20px', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px', border: '1px solid #ddd', maxHeight: '300px', overflowY: 'auto' }}>
+        <div className="logs-container" style={{ marginTop: '20px', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px', border: '1px solid #ddd', maxHeight: '300px', overflowY: 'auto' }}>
           <h3>Logs:</h3>
           {logs.map((log, idx) => (
             <pre key={idx} style={{ fontSize: '12px', margin: '5px 0', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
