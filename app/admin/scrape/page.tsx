@@ -2,143 +2,58 @@
 
 import { useState } from 'react';
 
-export default function ScrapeAllClassesPage() {
-  const [loading, setLoading] = useState<number | null>(null);
+export default function ScrapePage() {
+  const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [logs, setLogs] = useState<string[]>([]);
 
-  const handleScrapeByKelas = async (kelas: number) => {
-    setLoading(kelas);
-    setLogs([`Starting YouTube scrape for Kelas ${kelas}...`]);
+  const handleScrape = async () => {
+    setLoading(true);
+    setLogs(['Starting YouTube scrape for kelas 1-3...']);
+    setResult(null);
+    
     try {
-      const response = await fetch('/api/scrape-fresh', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ kelas }),
-      });
-      const data = await response.json();
-      setResult(data);
-      setLogs(prev => [...prev, JSON.stringify(data, null, 2)]);
-    } catch (error) {
-      setResult({ error: error.message, success: false });
-      setLogs(prev => [...prev, `Error: ${error.message}`]);
-    } finally {
-      setLoading(null);
-    }
-  };
-
-  const handleInsertSampleData = async () => {
-    setLoading(-1);
-    setLogs(['Starting to insert sample educational data...']);
-    try {
-      const response = await fetch('/api/insert-sample-data', {
+      const response = await fetch('/api/scrape-kelas-1-3-new', {
         method: 'POST',
       });
       const data = await response.json();
+      
       setResult(data);
       setLogs(prev => [...prev, JSON.stringify(data, null, 2)]);
-    } catch (error) {
+    } catch (error: any) {
       setResult({ error: error.message, success: false });
       setLogs(prev => [...prev, `Error: ${error.message}`]);
     } finally {
-      setLoading(null);
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial', overflow: 'auto', height: '100vh', scrollbarWidth: 'auto', scrollbarColor: '#888 #f1f1f1' }}>
-      <style>{`
-        ::-webkit-scrollbar { width: 12px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #888; border-radius: 6px; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
-        .kelas-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 15px 0; }
-        button { padding: 8px 12px; font-size: 14px; cursor: pointer; border: none; border-radius: 4px; transition: opacity 0.2s; }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
-        button:hover:not(:disabled) { opacity: 0.9; }
-        .sd { background-color: #4CAF50; color: white; }
-        .smp { background-color: #2196F3; color: white; }
-        .sma { background-color: #FF9800; color: white; }
-      `}</style>
+    <div style={{ padding: '20px', fontFamily: 'Arial', maxWidth: '900px', margin: '0 auto' }}>
+      <h1>Scrape YouTube Videos - Kelas 1-3</h1>
+      <p>Scrape educational videos from YouTube for classes 1-3 (SD)</p>
       
-      <h1>Scrape YouTube Videos Per Kelas</h1>
-      <p>Click tombol di bawah untuk scrape YouTube videos untuk setiap kelas. Setiap kelas di-scrape terpisah agar quota API aman.</p>
-      
-      <div style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#f8d7da', borderRadius: '6px', border: '3px solid #dc3545' }}>
-        <h3 style={{ marginTop: 0, color: '#721c24', fontSize: '20px' }}>🔴 YOUTUBE API QUOTA HABIS TOTAL</h3>
-        <p style={{ color: '#721c24', fontSize: '16px', fontWeight: 'bold', marginBottom: '15px' }}>
-          ⚠️ Semua API key sudah exhausted 403 error "quota exceeded". YouTube API akan reset besok. 
-          <br/>GUNAKAN TOMBOL INI SEKARANG untuk populate database dengan data realistis:
-        </p>
-        <button 
-          onClick={handleInsertSampleData} 
-          disabled={loading !== null}
-          style={{
-            padding: '16px 32px',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            cursor: loading !== null ? 'not-allowed' : 'pointer',
-            opacity: loading !== null ? 0.6 : 1,
-            backgroundColor: '#28a745',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            width: '100%',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          }}
-        >
-          {loading === -1 ? '⏳ Inserting 500+ Videos... (Loading)' : '✅ INSERT REALISTIC DATA NOW (Kelas 1-12 - SEMUA PELAJARAN)'}
-        </button>
-        <p style={{ color: '#721c24', fontSize: '14px', marginTop: '10px' }}>
-          → Ini akan insert 500+ realistic educational videos untuk semua kelas dan mata pelajaran
-          <br/>→ App siap langsung digunakan tanpa perlu YouTube API
-          <br/>→ Coba lagi besok dengan API key baru yang belum pernah dipakai
-        </p>
-      </div>
-      <div className="kelas-group">
-        {[1, 2, 3, 4, 5, 6].map(kelas => (
-          <button
-            key={kelas}
-            onClick={() => handleScrapeByKelas(kelas)}
-            disabled={loading !== null}
-            className="sd"
-          >
-            {loading === kelas ? `Scraping...` : `Kelas ${kelas}`}
-          </button>
-        ))}
-      </div>
-
-      <h2>SMP Kelas 7-9</h2>
-      <div className="kelas-group">
-        {[7, 8, 9].map(kelas => (
-          <button
-            key={kelas}
-            onClick={() => handleScrapeByKelas(kelas)}
-            disabled={loading !== null}
-            className="smp"
-          >
-            {loading === kelas ? `Scraping...` : `Kelas ${kelas}`}
-          </button>
-        ))}
-      </div>
-
-      <h2>SMA Kelas 10-12</h2>
-      <div className="kelas-group">
-        {[10, 11, 12].map(kelas => (
-          <button
-            key={kelas}
-            onClick={() => handleScrapeByKelas(kelas)}
-            disabled={loading !== null}
-            className="sma"
-          >
-            {loading === kelas ? `Scraping...` : `Kelas ${kelas}`}
-          </button>
-        ))}
-      </div>
+      <button 
+        onClick={handleScrape} 
+        disabled={loading}
+        style={{
+          padding: '12px 24px',
+          fontSize: '16px',
+          fontWeight: 'bold',
+          backgroundColor: '#4CAF50',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: loading ? 'not-allowed' : 'pointer',
+          opacity: loading ? 0.6 : 1,
+        }}
+      >
+        {loading ? 'Scraping... (Please wait ~3-5 minutes)' : 'START SCRAPE'}
+      </button>
 
       {logs.length > 0 && (
         <div style={{ marginTop: '20px', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px', border: '1px solid #ddd', maxHeight: '300px', overflowY: 'auto' }}>
-          <h3>Progress Logs:</h3>
+          <h3>Logs:</h3>
           {logs.map((log, idx) => (
             <pre key={idx} style={{ fontSize: '12px', margin: '5px 0', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
               {log}
@@ -148,12 +63,18 @@ export default function ScrapeAllClassesPage() {
       )}
 
       {result && (
-        <div style={{ marginTop: '20px', padding: '10px', backgroundColor: result.success ? '#d4edda' : '#f8d7da', borderRadius: '4px', border: `1px solid ${result.success ? '#c3e6cb' : '#f5c6cb'}` }}>
-          <h3 style={{ color: result.success ? '#155724' : '#721c24' }}>
-            {result.success ? '✓ Sukses!' : '✗ Error'}
+        <div style={{ marginTop: '20px', padding: '15px', backgroundColor: result.success ? '#d4edda' : '#f8d7da', borderRadius: '4px', border: `1px solid ${result.success ? '#c3e6cb' : '#f5c6cb'}` }}>
+          <h3 style={{ color: result.success ? '#155724' : '#721c24', marginTop: 0 }}>
+            {result.success ? '✓ Success!' : '✗ Error'}
           </h3>
-          <p>{result.message || result.error}</p>
-          {result.totalVideos && <p><strong>Total videos: {result.totalVideos}</strong></p>}
+          <p style={{ color: result.success ? '#155724' : '#721c24' }}>
+            {result.message || result.error}
+          </p>
+          {result.totalVideos && (
+            <p style={{ color: result.success ? '#155724' : '#721c24', fontWeight: 'bold' }}>
+              Total videos inserted: {result.totalVideos}
+            </p>
+          )}
         </div>
       )}
     </div>
