@@ -1,11 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function ScrapeAdminPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [logs, setLogs] = useState<string[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleScrape = async () => {
     setLoading(true);
@@ -28,8 +33,12 @@ export default function ScrapeAdminPage() {
     }
   };
 
+  if (!mounted) {
+    return null;
+  }
+
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial', maxWidth: '900px', margin: '0 auto' }}>
+    <div style={{ padding: '20px', fontFamily: 'Arial', maxWidth: '900px', margin: '0 auto' }} suppressHydrationWarning>
       <h1>Scrape YouTube Videos - Kelas 1-3</h1>
       <p>Scrape educational videos from YouTube for classes 1-3 (SD). This will insert all videos directly into the database.</p>
       
