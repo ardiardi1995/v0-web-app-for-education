@@ -1,0 +1,8 @@
+[project]
+name = "education-scraper"
+version = "0.1.0"
+description = "YouTube scraper for educational videos"
+requires-python = ">=3.9"
+
+[dependency-groups]
+dev = []
