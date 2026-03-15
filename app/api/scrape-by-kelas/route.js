@@ -25,16 +25,31 @@ async function searchYouTubeVideos(query, maxResults = 20) {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey) throw new Error('YOUTUBE_API_KEY not set');
 
+  console.log(`[v0] DEBUG: API Key present: ${apiKey ? 'YES' : 'NO'}`);
+  console.log(`[v0] DEBUG: API Key length: ${apiKey ? apiKey.length : 0}`);
+  console.log(`[v0] DEBUG: API Key starts with: ${apiKey ? apiKey.substring(0, 8) + '...' : 'NONE'}`);
+
   const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=${maxResults}&type=video&order=relevance&key=${apiKey}`;
 
   try {
+    console.log(`[v0] DEBUG: Fetching URL for query: "${query}"`);
     const response = await fetch(url);
+    
+    console.log(`[v0] DEBUG: Response status: ${response.status}`);
+    
     if (response.status === 403) {
-      console.warn(`[v0] YouTube API quota exceeded for: ${query}`);
+      console.warn(`[v0] YouTube API quota exceeded (403) for: ${query}`);
       return [];
     }
-    if (!response.ok) throw new Error(`YouTube API error: ${response.status}`);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[v0] YouTube API error ${response.status}: ${errorText}`);
+      throw new Error(`YouTube API error: ${response.status}`);
+    }
+    
     const data = await response.json();
+    console.log(`[v0] DEBUG: Got ${data.items ? data.items.length : 0} results for "${query}"`);
     return data.items || [];
   } catch (error) {
     console.error(`[v0] Error searching for "${query}":`, error.message);
