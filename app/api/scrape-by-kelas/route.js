@@ -21,38 +21,35 @@ function getCategory(kelas) {
   return 'SMA';
 }
 
-async function searchYouTubeVideos(query, maxResults = 20) {
+async function searchYouTubeVideos(query, maxResults = 25) {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey) throw new Error('YOUTUBE_API_KEY not set');
-
-  console.log(`[v0] DEBUG: API Key present: ${apiKey ? 'YES' : 'NO'}`);
-  console.log(`[v0] DEBUG: API Key length: ${apiKey ? apiKey.length : 0}`);
-  console.log(`[v0] DEBUG: API Key starts with: ${apiKey ? apiKey.substring(0, 8) + '...' : 'NONE'}`);
 
   const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=${maxResults}&type=video&order=relevance&key=${apiKey}`;
 
   try {
-    console.log(`[v0] DEBUG: Fetching URL for query: "${query}"`);
     const response = await fetch(url);
     
-    console.log(`[v0] DEBUG: Response status: ${response.status}`);
-    
     if (response.status === 403) {
-      console.warn(`[v0] YouTube API quota exceeded (403) for: ${query}`);
+      const data = await response.json();
+      console.error(`[v0] API 403 Error:`, data.error?.message || 'Forbidden');
       return [];
     }
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[v0] YouTube API error ${response.status}: ${errorText}`);
-      throw new Error(`YouTube API error: ${response.status}`);
+      console.error(`[v0] YouTube API ${response.status}: ${errorText}`);
+      return [];
     }
     
     const data = await response.json();
-    console.log(`[v0] DEBUG: Got ${data.items ? data.items.length : 0} results for "${query}"`);
+    if (data.error) {
+      console.error(`[v0] API Error: ${data.error.message}`);
+      return [];
+    }
     return data.items || [];
   } catch (error) {
-    console.error(`[v0] Error searching for "${query}":`, error.message);
+    console.error(`[v0] Fetch error for "${query}":`, error.message);
     return [];
   }
 }
@@ -92,43 +89,38 @@ export async function POST(request) {
     let totalInserted = 0;
 
     for (const subject of subjects) {
-      const keywords = [
-        `${subject} kelas ${kelas} pelajaran`,
-        `${subject} kelas ${kelas}`,
-        `belajar ${subject}`,
-      ];
+      // Single optimized query per subject (reduced from 3 to conserve quota)
+      const keyword = `${subject} kelas ${kelas}`;
 
-      for (const keyword of keywords) {
-        console.log(`[v0] Searching: ${keyword}`);
-        const videos = await searchYouTubeVideos(keyword, 15);
+      console.log(`[v0] Searching: ${keyword}`);
+      const videos = await searchYouTubeVideos(keyword, 25);
 
-        if (videos.length === 0) continue;
+      if (videos.length === 0) continue;
 
-        for (const video of videos) {
-          try {
-            await sql`
-              INSERT INTO videos (videoid, title, description, thumbnail, category, subject, kelas, createdat)
-              VALUES (
-                ${video.id.videoId},
-                ${video.snippet.title},
-                ${video.snippet.description || ''},
-                ${video.snippet.thumbnails?.medium?.url || 'https://i.ytimg.com/vi/default/mqdefault.jpg'},
-                ${category},
-                ${subject},
-                ${kelas},
-                NOW()
-              )
-              ON CONFLICT (videoid) DO NOTHING
-            `;
-            totalInserted++;
-          } catch (err) {
-            // Skip duplicates
-          }
+      for (const video of videos) {
+        try {
+          await sql`
+            INSERT INTO videos (videoid, title, description, thumbnail, category, subject, kelas, createdat)
+            VALUES (
+              ${video.id.videoId},
+              ${video.snippet.title},
+              ${video.snippet.description || ''},
+              ${video.snippet.thumbnails?.medium?.url || 'https://i.ytimg.com/vi/default/mqdefault.jpg'},
+              ${category},
+              ${subject},
+              ${kelas},
+              NOW()
+            )
+            ON CONFLICT (videoid) DO NOTHING
+          `;
+          totalInserted++;
+        } catch (err) {
+          // Skip duplicates
         }
-
-        console.log(`[v0] Kelas ${kelas} - ${subject}: inserted ${videos.length} videos`);
-        await new Promise(r => setTimeout(r, 1000)); // Rate limit
       }
+
+      console.log(`[v0] Kelas ${kelas} - ${subject}: inserted ${videos.length} videos`);
+      await new Promise(r => setTimeout(r, 800)); // Rate limit between requests
     }
 
     console.log(`[v0] Kelas ${kelas} complete: ${totalInserted} videos inserted`);
