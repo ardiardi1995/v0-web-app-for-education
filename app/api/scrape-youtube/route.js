@@ -14,12 +14,29 @@ export async function GET(request) {
   const messages = [];
 
   try {
-    // Delete old IPA and IPS data
+    // Step 1: Create table if it doesn't exist
+    console.log('[v0] Creating videos table...');
+    await sql`
+      CREATE TABLE IF NOT EXISTS videos (
+        id SERIAL PRIMARY KEY,
+        videoid VARCHAR(255) UNIQUE NOT NULL,
+        title VARCHAR(500) NOT NULL,
+        description TEXT,
+        thumbnail VARCHAR(500),
+        subject VARCHAR(100),
+        kelas INT,
+        category VARCHAR(50),
+        createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    messages.push('[✓] Videos table created/verified');
+
+    // Step 2: Delete old IPA and IPS data
     try {
       await sql`DELETE FROM videos WHERE subject IN ('IPA', 'IPS')`;
       messages.push('[✓] Deleted old IPA and IPS data');
     } catch (e) {
-      messages.push('[✓] No old IPA/IPS data to delete');
+      messages.push('[✓] Table ready for scraping');
     }
 
     const SUBJECTS_BY_CLASS = {
@@ -43,7 +60,7 @@ export async function GET(request) {
             for (const item of data.items) {
               try {
                 await sql`
-                  INSERT INTO videos (videoid, title, description, thumbnail, subject, kelas, category, createdat, url)
+                  INSERT INTO videos (videoid, title, description, thumbnail, subject, kelas, category, createdat)
                   VALUES (
                     ${item.id.videoId},
                     ${item.snippet.title},
@@ -52,8 +69,7 @@ export async function GET(request) {
                     ${subject},
                     ${kelas},
                     'SD',
-                    NOW(),
-                    ${'https://youtube.com/watch?v=' + item.id.videoId}
+                    NOW()
                   )
                   ON CONFLICT (videoid) DO NOTHING
                 `;
