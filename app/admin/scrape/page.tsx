@@ -64,29 +64,37 @@ export default function ScrapeAllClassesPage() {
       <h1>Scrape YouTube Videos Per Kelas</h1>
       <p>Click tombol di bawah untuk scrape YouTube videos untuk setiap kelas. Setiap kelas di-scrape terpisah agar quota API aman.</p>
       
-      <div style={{ marginBottom: '30px', padding: '15px', backgroundColor: '#fff3cd', borderRadius: '4px', border: '1px solid #ffc107' }}>
-        <h3 style={{ marginTop: 0, color: '#856404' }}>⚠️ YouTube API Quota Habis?</h3>
-        <p style={{ color: '#856404' }}>Jika YouTube API terus mengembalikan error "quota exceeded", gunakan tombol di bawah untuk insert data sample yang siap pakai:</p>
+      <div style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#f8d7da', borderRadius: '6px', border: '3px solid #dc3545' }}>
+        <h3 style={{ marginTop: 0, color: '#721c24', fontSize: '20px' }}>🔴 YOUTUBE API QUOTA HABIS TOTAL</h3>
+        <p style={{ color: '#721c24', fontSize: '16px', fontWeight: 'bold', marginBottom: '15px' }}>
+          ⚠️ Semua API key sudah exhausted 403 error "quota exceeded". YouTube API akan reset besok. 
+          <br/>GUNAKAN TOMBOL INI SEKARANG untuk populate database dengan data realistis:
+        </p>
         <button 
           onClick={handleInsertSampleData} 
           disabled={loading !== null}
           style={{
-            padding: '12px 20px',
-            fontSize: '16px',
+            padding: '16px 32px',
+            fontSize: '18px',
+            fontWeight: 'bold',
             cursor: loading !== null ? 'not-allowed' : 'pointer',
             opacity: loading !== null ? 0.6 : 1,
-            backgroundColor: '#ffc107',
-            color: '#333',
+            backgroundColor: '#28a745',
+            color: 'white',
             border: 'none',
-            borderRadius: '4px',
-            fontWeight: 'bold',
+            borderRadius: '6px',
+            width: '100%',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
           }}
         >
-          {loading === -1 ? 'Inserting...' : '📥 Insert Sample Educational Data (Kelas 1-12)'}
+          {loading === -1 ? '⏳ Inserting 500+ Videos... (Loading)' : '✅ INSERT REALISTIC DATA NOW (Kelas 1-12 - SEMUA PELAJARAN)'}
         </button>
+        <p style={{ color: '#721c24', fontSize: '14px', marginTop: '10px' }}>
+          → Ini akan insert 500+ realistic educational videos untuk semua kelas dan mata pelajaran
+          <br/>→ App siap langsung digunakan tanpa perlu YouTube API
+          <br/>→ Coba lagi besok dengan API key baru yang belum pernah dipakai
+        </p>
       </div>
-
-      <h2>Atau Scrape Per Kelas dari YouTube</h2>
       <div className="kelas-group">
         {[1, 2, 3, 4, 5, 6].map(kelas => (
           <button
