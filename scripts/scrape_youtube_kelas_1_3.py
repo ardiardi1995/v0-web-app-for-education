@@ -13,11 +13,11 @@ from urllib.error import URLError
 import psycopg
 from datetime import datetime
 
-# Configuration
+# Configuration - Kurikulum SD Kelas 1-6 (IPAS menggabungkan IPA dan IPS)
 SUBJECTS_BY_CLASS = {
-    1: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS'],
-    2: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS'],
-    3: ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS'],
+    1: ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
+    2: ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
+    3: ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
 }
 
 DATABASE_URL = os.getenv('DATABASE_URL')
@@ -63,6 +63,28 @@ def search_youtube_videos(query, max_results=20):
     except Exception as e:
         print(f'[v0] Unexpected error searching YouTube: {e}')
         return []
+
+def delete_old_data(kelas):
+    """Delete old data for IPA and IPS subjects (replaced by IPAS)"""
+    try:
+        with psycopg.connect(DATABASE_URL) as conn:
+            with conn.cursor() as cur:
+                # Delete old IPA and IPS data for this class
+                cur.execute("""
+                    DELETE FROM videos 
+                    WHERE kelas = %s AND (subject = 'IPA' OR subject = 'IPS')
+                """, (kelas,))
+                
+                deleted = cur.rowcount
+                conn.commit()
+                
+                if deleted > 0:
+                    print(f'[v0] Deleted {deleted} old IPA/IPS videos for kelas {kelas}')
+                
+                return deleted
+    except Exception as e:
+        print(f'[v0] Error deleting old data: {e}')
+        return 0
 
 def insert_videos_to_db(kelas, subject, videos):
     """Insert videos into the database"""
@@ -122,6 +144,9 @@ def main():
     try:
         # Scrape for each class
         for kelas in [1, 2, 3]:
+            # Delete old IPA and IPS data first
+            delete_old_data(kelas)
+            
             subjects = SUBJECTS_BY_CLASS[kelas]
             
             for subject in subjects:
