@@ -26,15 +26,15 @@ export async function GET(request) {
     const pjokCount = updatePJOK.length || 0;
     console.log(`[v0] Updated ${pjokCount} records: Pendidikan Jasmani → PJOK`);
 
-    // 2. Change kelas 6 category from "SMP" to "SD"
-    console.log('[v0] Changing kelas 6 category from SMP to SD...');
-    const updateKelas6 = await sql`
+    // 2. Change kelas 5 AND kelas 6 category from "SMP" to "SD"
+    console.log('[v0] Changing kelas 5-6 category from SMP to SD...');
+    const updateKelas56 = await sql`
       UPDATE videos 
       SET category = 'SD' 
-      WHERE kelas = 6 AND category = 'SMP'
+      WHERE (kelas = 5 OR kelas = 6) AND category = 'SMP'
     `;
-    const kelas6Count = updateKelas6.length || 0;
-    console.log(`[v0] Updated ${kelas6Count} records: Kelas 6 category SMP → SD`);
+    const kelas56Count = updateKelas56.length || 0;
+    console.log(`[v0] Updated ${kelas56Count} records: Kelas 5-6 category SMP → SD`);
 
     const html = `
     <html>
@@ -115,8 +115,8 @@ export async function GET(request) {
           </div>
           
           <div class="result">
-            <h3>2. Kelas 6 Category Update</h3>
-            <p>Category changed from SMP to SD: ${kelas6Count} records updated</p>
+            <h3>2. Kelas 5-6 Category Update</h3>
+            <p>Category changed from SMP to SD: ${kelas56Count} records updated</p>
           </div>
           
           <div class="stats">
@@ -125,13 +125,13 @@ export async function GET(request) {
               <div class="stat-label">PJOK Records Fixed</div>
             </div>
             <div class="stat-box">
-              <div class="stat-number">${kelas6Count}</div>
-              <div class="stat-label">Kelas 6 Records Fixed</div>
+              <div class="stat-number">${kelas56Count}</div>
+              <div class="stat-label">Kelas 5-6 Records Fixed</div>
             </div>
           </div>
           
           <div style="margin-top: 30px; padding: 15px; background: #e3f2fd; border-radius: 4px; color: #1565c0;">
-            <strong>Total changes:</strong> ${pjokCount + kelas6Count} records updated
+            <strong>Total changes:</strong> ${pjokCount + kelas56Count} records updated
           </div>
         </div>
       </body>
