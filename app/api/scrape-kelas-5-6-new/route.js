@@ -1,8 +1,8 @@
 import { neon } from '@neondatabase/serverless';
 
 const SUBJECTS_BY_CLASS = {
-  5: ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'Pendidikan Jasmani'],
-  6: ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'Pendidikan Jasmani'],
+  5: ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'Pendidikan Jasmani', 'Bahasa Inggris'],
+  6: ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'Pendidikan Jasmani', 'Bahasa Inggris'],
 };
 
 async function searchYouTube(query) {
