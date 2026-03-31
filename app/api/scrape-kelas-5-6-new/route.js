@@ -1,8 +1,8 @@
 import { neon } from '@neondatabase/serverless';
 
 const SUBJECTS_BY_CLASS = {
-  5: ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'Pendidikan Jasmani', 'Bahasa Inggris'],
-  6: ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'Pendidikan Jasmani', 'Bahasa Inggris'],
+  5: ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK', 'Bahasa Inggris'],
+  6: ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK', 'Bahasa Inggris'],
 };
 
 async function searchYouTube(query) {
@@ -127,6 +127,8 @@ export async function POST(request) {
 
             console.log(`[v0]   → Inserting: "${title.substring(0, 50)}..." (ID: ${videoId})`);
 
+            const category = kelas === 6 ? 'SD' : 'SMP';
+            
             await sql`
               INSERT INTO videos (videoid, title, description, thumbnail, category, subject, kelas, createdat)
               VALUES (
@@ -134,7 +136,7 @@ export async function POST(request) {
                 ${title},
                 ${description},
                 ${thumbnail},
-                'SMP',
+                ${category},
                 ${subject},
                 ${kelas},
                 NOW()
