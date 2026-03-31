@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-export default function ScrapeAdminPage() {
+export default function ScrapePage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [logs, setLogs] = useState<string[]>([]);
@@ -14,11 +14,11 @@ export default function ScrapeAdminPage() {
 
   const handleScrape = async () => {
     setLoading(true);
-    setLogs(['Starting YouTube scrape for kelas 1-3...']);
+    setLogs(['Starting YouTube scrape for kelas 3-4...']);
     setResult(null);
     
     try {
-      const response = await fetch('/api/scrape-kelas-1-3-new', {
+      const response = await fetch('/api/scrape-kelas-3-4-new', {
         method: 'POST',
       });
       const data = await response.json();
@@ -60,8 +60,8 @@ export default function ScrapeAdminPage() {
         }
       `}</style>
 
-      <h1>Scrape YouTube Videos - Kelas 1-3</h1>
-      <p>Scrape educational videos from YouTube for classes 1-3 (SD). This will insert all videos directly into the database.</p>
+      <h1>Scrape YouTube Videos - Kelas 3-4</h1>
+      <p>Re-scrape kelas 3 and scrape kelas 4 educational videos from YouTube. This will insert all videos directly into the database with SD category.</p>
       
       <button 
         onClick={handleScrape} 
@@ -70,7 +70,7 @@ export default function ScrapeAdminPage() {
           padding: '12px 24px',
           fontSize: '16px',
           fontWeight: 'bold',
-          backgroundColor: '#4CAF50',
+          backgroundColor: '#2196F3',
           color: 'white',
           border: 'none',
           borderRadius: '4px',
@@ -78,7 +78,7 @@ export default function ScrapeAdminPage() {
           opacity: loading ? 0.6 : 1,
         }}
       >
-        {loading ? 'Scraping... Please wait (~3-5 minutes)' : 'START SCRAPE KELAS 1-3'}
+        {loading ? 'Scraping... Please wait (~5-7 minutes)' : 'START SCRAPE KELAS 3-4'}
       </button>
 
       {logs.length > 0 && (
