@@ -3,6 +3,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Force light mode by default */
+html {
+  color-scheme: light;
+}
+
 /* Hide scrollbar but keep functionality */
 html, body {
   scrollbar-width: none;
