@@ -35,12 +35,12 @@ export default function VideoPage({ params }: { params: Promise<{ id: string }> 
         const data = await response.json();
         const allVideos = data.videos || [];
 
-        const currentVideo = allVideos.find((v: Video) => v.id === id);
+        const currentVideo = allVideos.find((v: Video) => String(v.id) === id);
         setVideo(currentVideo || null);
 
         if (currentVideo) {
           const related = allVideos
-            .filter((v: Video) => v.subject === currentVideo.subject && v.id !== id)
+            .filter((v: Video) => v.subject === currentVideo.subject && String(v.id) !== id)
             .slice(0, 6);
           setRelatedVideos(related);
         }

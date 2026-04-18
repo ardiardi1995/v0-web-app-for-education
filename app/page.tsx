@@ -26,12 +26,12 @@ const KELAS_SUBJECTS: Record<number, string[]> = {
   4: ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK', 'Bahasa Inggris'],
   5: ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK', 'Bahasa Inggris'],
   6: ['Matematika', 'Bahasa Indonesia', 'IPAS', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK', 'Bahasa Inggris'],
-  7: ['Matematika', 'Fisika', 'Biologi', 'Kimia', 'Bahasa Indonesia', 'Bahasa Inggris', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
-  8: ['Matematika', 'Fisika', 'Biologi', 'Kimia', 'Bahasa Indonesia', 'Bahasa Inggris', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
-  9: ['Matematika', 'Fisika', 'Biologi', 'Kimia', 'Bahasa Indonesia', 'Bahasa Inggris', 'Pendidikan Pancasila', 'Pendidikan Agama Islam', 'Seni Budaya', 'PJOK'],
-  10: ['Matematika', 'Fisika', 'Kimia', 'Biologi', 'Bahasa Inggris', 'Pendidikan Pancasila', 'Seni Budaya', 'PJOK'],
-  11: ['Matematika', 'Fisika', 'Kimia', 'Biologi', 'Bahasa Inggris', 'Pendidikan Pancasila', 'Seni Budaya', 'PJOK'],
-  12: ['Matematika', 'Fisika', 'Kimia', 'Biologi', 'Bahasa Inggris', 'Pendidikan Pancasila', 'Seni Budaya', 'PJOK'],
+  7: ['Pendidikan Agama dan Budi Pekerti', 'Pendidikan Pancasila', 'Bahasa Indonesia', 'Matematika', 'Ilmu Pengetahuan Alam (IPA)', 'Ilmu Pengetahuan Sosial (IPS)', 'Bahasa Inggris', 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', 'Informatika', 'Seni dan Prakarya'],
+  8: ['Pendidikan Agama dan Budi Pekerti', 'Pendidikan Pancasila', 'Bahasa Indonesia', 'Matematika', 'Ilmu Pengetahuan Alam (IPA)', 'Ilmu Pengetahuan Sosial (IPS)', 'Bahasa Inggris', 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', 'Informatika', 'Seni dan Prakarya'],
+  9: ['Pendidikan Agama dan Budi Pekerti', 'Pendidikan Pancasila', 'Bahasa Indonesia', 'Matematika', 'Ilmu Pengetahuan Alam (IPA)', 'Ilmu Pengetahuan Sosial (IPS)', 'Bahasa Inggris', 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', 'Informatika', 'Seni dan Prakarya'],
+  10: ['Pendidikan Agama dan Budi Pekerti', 'Pendidikan Pancasila', 'Bahasa Indonesia', 'Matematika', 'Bahasa Inggris', 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', 'Sejarah Indonesia', 'Seni Budaya', 'Informatika', 'Biologi', 'Fisika', 'Kimia', 'Matematika Tingkat Lanjut', 'Ekonomi', 'Sosiologi', 'Geografi', 'Antropologi', 'Bahasa Indonesia Tingkat Lanjut', 'Bahasa Inggris Tingkat Lanjut', 'Bahasa Asing', 'Prakarya dan Kewirausahaan'],
+  11: ['Pendidikan Agama dan Budi Pekerti', 'Pendidikan Pancasila', 'Bahasa Indonesia', 'Matematika', 'Bahasa Inggris', 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', 'Sejarah Indonesia', 'Seni Budaya', 'Informatika', 'Biologi', 'Fisika', 'Kimia', 'Matematika Tingkat Lanjut', 'Ekonomi', 'Sosiologi', 'Geografi', 'Antropologi', 'Bahasa Indonesia Tingkat Lanjut', 'Bahasa Inggris Tingkat Lanjut', 'Bahasa Asing', 'Prakarya dan Kewirausahaan'],
+  12: ['Pendidikan Agama dan Budi Pekerti', 'Pendidikan Pancasila', 'Bahasa Indonesia', 'Matematika', 'Bahasa Inggris', 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', 'Sejarah Indonesia', 'Seni Budaya', 'Informatika', 'Biologi', 'Fisika', 'Kimia', 'Matematika Tingkat Lanjut', 'Ekonomi', 'Sosiologi', 'Geografi', 'Antropologi', 'Bahasa Indonesia Tingkat Lanjut', 'Bahasa Inggris Tingkat Lanjut', 'Bahasa Asing', 'Prakarya dan Kewirausahaan'],
 };
 
 export default function Home() {
@@ -106,9 +106,9 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 overflow-y-auto scrollbar-hide">
-      {/* Header */}
-      <div className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-40">
+    <main className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Header - Fixed at top */}
+      <div className="border-b border-border bg-background/95 backdrop-blur-md fixed top-0 left-0 right-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
           {/* Filters - Horizontal layout with labels */}
           <div className="flex gap-2 items-end">
@@ -151,7 +151,7 @@ export default function Home() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-2">
+      <div className="max-w-7xl mx-auto px-4 py-2 pt-24">
         {/* Results Info */}
         <div className="mb-2">
           <p className="text-sm text-muted-foreground">
